@@ -152,6 +152,10 @@ contract SharedUpsideToken is ERC721, WithFees {
     ERC721("SharedUpsideToken", "SUP")
     WithFees(0xe11Da9560b51f8918295edC5ab9c0a90E9ADa20B, 500) // 5% of secondary sales should go to the given address
   {}
+
+  function supportsInterface(bytes4 interfaceId) public view override(WithFees, ERC721) returns (bool) {
+    return WithFees.supportsInterface(interfaceId);
+  }
 }
 ```
 
