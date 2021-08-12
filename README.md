@@ -107,7 +107,7 @@ contract RandomToken is ERC721, RandomlyAssigned {
 
     // ...
   }
-}
+}```
 
 *) We can't create proper random numbers on chain. But this does the job well enough, if you hide your metadata during public sale and are not too valuable of an NFT project (pot. exploit costs a lot of gas, thus making it economically unfeasible to do for profit for 'normal' NFT collections). If you want true random assignment, check out [Chainlink](https://chain.link/).
 
