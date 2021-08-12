@@ -95,6 +95,22 @@ contract RareToken is ERC721, LinarlyAssigned {
 #### `RandomlyAssigned.sol`
 (Semi-)randomly* assign token IDs from a fixed collection size on mint.
 
+```solidity
+contract RandomToken is ERC721, RandomlyAssigned {
+  constructor()
+    ERC721("RandomToken", "RT")
+    RandomlyAssigned(1000, 1) // Max. 1k NFTs available; Start counting from 1 (instead of 0)
+  {}
+
+  function mint () external {
+    uint256 newTokenId = nextToken(); // Create a new random token ID
+
+    // ...
+  }
+}
+
+*) We can't create proper random numbers on chain. But this does the job well enough, if you hide your metadata during public sale and are not too valuable of an NFT project (pot. exploit costs a lot of gas, thus making it economically unfeasible to do for profit for 'normal' NFT collections). If you want true random assignment, check out [Chainlink](https://chain.link/).
+
 
 ### `WithContractMetaData.sol`
 Link to your collection's contract meta data right from within your smart contract.

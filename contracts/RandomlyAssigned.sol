@@ -3,32 +3,34 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/Counters.sol";
 
+import "./WithLimitedSupply.sol";
+
 /// @author 1001.digital
 /// @title Randomly assign tokenIDs from a given set of tokens.
-abstract contract RandomlyAssigned {
+abstract contract RandomlyAssigned is WithLimitedSupply {
     using Counters for Counters.Counter;
-
-    // There are 10k tokens
-    uint256 public constant MAX_COUNT = 10000;
-
-    // Keep track of how many we have minted
-    Counters.Counter public count;
 
     // Used for random index assignment
     Counters.Counter internal nonce;
-    uint256[MAX_COUNT] internal tokenMatrix;
+    mapping(uint256 => uint256) private tokenMatrix;
 
-    /// @dev Enure that there are still available tokens
-    modifier ensureAvailability() {
-        require(count.current() < MAX_COUNT, "No more Scapes available");
-        _;
+    // The initial token ID
+    uint256 private startFrom;
+
+    /// Instanciate the contract
+    /// @param _maxSupply how many tokens this collection should hold
+    /// @param _startFrom the tokenID with which to start counting
+    constructor (uint256 _maxSupply, uint256 _startFrom)
+        WithLimitedSupply(_maxSupply)
+    {
+        startFrom = _startFrom;
     }
 
     /// Get the next token ID
     /// @dev Randomly gets a new token ID and keeps track of the ones that are still available.
     /// @return the next token ID
-    function nextToken() internal returns (uint256) {
-        uint256 maxIndex = MAX_COUNT - count.current();
+    function nextToken() internal override returns (uint256) {
+        uint256 maxIndex = maxSupply() - tokenCount();
         uint256 random = uint256(keccak256(
             abi.encodePacked(
                 nonce.current(),
@@ -58,9 +60,9 @@ abstract contract RandomlyAssigned {
         }
 
         // Increment counts
-        count.increment();
+        super.nextToken();
         nonce.increment();
 
-        return value;
+        return value + startFrom;
     }
 }
