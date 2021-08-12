@@ -13,9 +13,8 @@ abstract contract WithFees is HasSecondarySaleFees, ERC721 {
     // The address to pay fees to
     address payable internal beneficiary;
 
-    /// The fee basis points
-    /// @dev Basis Points are a measure common in the financial industry. One Basis Point equals 0.01%.
-    uint256 public bps;
+    // The fee basis points
+    uint256 internal bps;
 
     /// Instanciate the contract
     /// @param _beneficiary the address to send fees to
