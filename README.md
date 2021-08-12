@@ -26,10 +26,21 @@ contract MyToken is ERC721, WithSaleStart {
 ### `LimitedTokensPerWallet.sol`
 Limits the amount of tokens an external wallet can hold.
 
+```solidity
+contract LimitedToken is ERC721, LimitedTokensPerWallet {
+  constructor()
+    ERC721("LimitedToken", "LT")
+    LimitedTokensPerWallet(3) // Only allow three tokens per wallet
+  {}
+
+  // Mint & Transfer limits are taken care of by the library.
+}
+```
+
 ### `OnePerWallet.sol`
 A more extreme version of `LimitedTokensPerWallet`, which only allows holding one token in an external wallet address.
 
-To use this in your project, call the `onePerWallet` modifier.
+To use this in your project just extend the Contract. If you need more control, call the `onePerWallet` modifier. 
 
 ```solidity
 contract OneForAllToken is ERC721, OnePerWallet {
@@ -37,11 +48,7 @@ contract OneForAllToken is ERC721, OnePerWallet {
     ERC721("OneForAllToken", "OFA")
   {}
 
-  function mint () external onePerWallet returns (uint256) {
-    // ...
-  }
-
-  // Transfer are taken care of by the library.
+  // Mints and Transfer limites are taken care of by the library.
 }
 ```
 

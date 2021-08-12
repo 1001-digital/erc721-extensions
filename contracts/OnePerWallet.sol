@@ -15,7 +15,7 @@ abstract contract OnePerWallet is ERC721 {
     /// @dev Only allow one token per wallet
     modifier onePerWallet(address wallet) {
         if (CheckAddress.isExternal(wallet)) {
-            require(balanceOf(wallet) == 0, "Can only hold one token per wallet");
+            require(_ownedToken[wallet] == 0, "Can only hold one token per wallet");
         }
 
         _;
