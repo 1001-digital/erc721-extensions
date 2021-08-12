@@ -11,18 +11,22 @@ abstract contract WithLimitedSupply {
     /// @dev The maximum count of tokens this token tracker will hold.
     uint256 public maxSupply;
 
+    /// @dev The initial token ID
+    uint256 private startFrom;
+
     /// @dev Keeps track of how many we have minted
     Counters.Counter public tokenCount;
 
     /// Instanciate the contract
-    /// @param _tokenCount how many tokens this collection should hold
-    constructor (uint256 _tokenCount) {
-        maxSupply = _tokenCount;
+    /// @param _maxSupply how many tokens this collection should hold
+    constructor (uint256 _maxSupply, uint256 _startFrom) {
+        maxSupply = _maxSupply;
+        startFrom = _startFrom;
     }
 
     /// @dev Check whether tokens are still available
     modifier ensureAvailability() {
-        require(tokenCount.current() < maxSupply, "No more Scapes available");
+        require(tokenCount.current() < maxSupply, "No more tokens available");
         _;
     }
 
@@ -32,6 +36,6 @@ abstract contract WithLimitedSupply {
     function nextToken() internal ensureAvailability returns (uint256) {
         tokenCount.increment();
 
-        return tokenCount.current();
+        return tokenCount.current() + startFrom;
     }
 }
