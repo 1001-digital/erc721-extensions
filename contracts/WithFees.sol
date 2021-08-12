@@ -9,7 +9,7 @@ import "./standards/HasSecondarySaleFees.sol";
 /// @author 1001.digital
 /// @title Implements the various fee standards that are floating around.
 /// @dev We need a proper standard for this.
-abstract contract WithFees is HasSecondarySaleFees, ERC721 {
+abstract contract WithFees is ERC721, HasSecondarySaleFees {
     // The address to pay fees to
     address payable internal beneficiary;
 
