@@ -3,7 +3,9 @@
   "version": "0.0.2",
   "description": "Composable smart contract extensions for the OpenZeppelin base contracts",
   "scripts": {
-    "test": "harthat test"
+    "test": "hardhat test",
+    "node": "hardhat node",
+    "deploy:localhost": "hardhat run scripts/deploy.js --network localhost"
   },
   "repository": {
     "type": "git",
