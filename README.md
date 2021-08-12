@@ -144,7 +144,16 @@ contract CleanToken is ERC721, WithIPFSMetaData {
 ```
 
 ### `WithFees.sol`
-Abstracts out the complexity of current fee standards.
+Aims to abstracts out the complexity of current fee standards.
+
+```solidity
+contract SharedUpsideToken is ERC721, WithFees {
+  constructor()
+    ERC721("SharedUpsideToken", "SUP")
+    WithFees(0xe11Da9560b51f8918295edC5ab9c0a90E9ADa20B, 500) // 5% of secondary sales should go to the given address
+  {}
+}
+```
 
 ## Installation
 1. In your project run `npm install @1001-digital/erc721-exensions`
