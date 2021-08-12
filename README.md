@@ -61,7 +61,7 @@ To keep track of the token supply and to get the next available tokenID, call `n
 contract RareToken is ERC721, WithLimitedSupply {
   constructor()
     ERC721("RareToken", "RT")
-    WithLimitedSupply(1000) // Max. 1k NFTs available
+    WithLimitedSupply(1000, 1) // Max. 1k NFTs available; start from token #1
   {}
 
   function mint () 
@@ -76,7 +76,8 @@ contract RareToken is ERC721, WithLimitedSupply {
 ```
 
 ### `RandomlyAssigned.sol`
-(Semi-) Randomly assign token IDs from a fixed collection size on mint.
+(Semi-)randomly* assign token IDs from a fixed collection size on mint.
+
 
 ### `WithContractMetaData.sol`
 Link to your collection's contract meta data right from within your smart contract.
