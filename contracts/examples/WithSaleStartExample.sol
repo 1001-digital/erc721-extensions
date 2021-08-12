@@ -5,17 +5,17 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 import "./../WithSaleStart.sol";
 
-contract MyToken is ERC721, WithSaleStart {
+contract WithSaleStartExample is ERC721, WithSaleStart {
   uint256 private _tokenId = 0;
 
   constructor(
     uint256 time
   )
     ERC721("MyToken", "MT")
-    WithSaleStart(1735686000)
+    WithSaleStart(time)
   {}
 
-  function claim () external afterSaleStart returns (uint256) {
+  function mint () external afterSaleStart returns (uint256) {
     _tokenId++;
     _safeMint(msg.sender, _tokenId);
 
