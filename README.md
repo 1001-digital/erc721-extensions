@@ -53,7 +53,7 @@ contract OneForAllToken is ERC721, OnePerWallet {
 ```
 
 ### `WithLimitedSupply.sol`
-A simple token tracker that limits the token supply and increments token IDs on each new mint.
+A simple token tracker that limits the token supply.
 
 To keep track of the token supply and to get the next available tokenID, call `nextToken()` when creating new tokens.
 
@@ -61,13 +61,10 @@ To keep track of the token supply and to get the next available tokenID, call `n
 contract RareToken is ERC721, WithLimitedSupply {
   constructor()
     ERC721("RareToken", "RT")
-    WithLimitedSupply(1000, 1) // Max. 1k NFTs available; start from token #1
+    WithLimitedSupply(1000) // Max. 1k NFTs available
   {}
 
-  function mint () 
-    external 
-    ensureAvailability // Ensure tokens are still available
-  {
+  function mint () external {
     uint256 newTokenId = nextToken(); // Create a new token ID
 
     // ...
@@ -75,7 +72,27 @@ contract RareToken is ERC721, WithLimitedSupply {
 }
 ```
 
-### `RandomlyAssigned.sol`
+There are two Contracts that build on this: `LinearlyAssigned`, which adds the option of starting the token tracker from a specific number and `RandomlyAssigned`, wich enables semi random token ID assignments.
+
+#### `LinearlyAssigned.sol`
+Instanciate it with the max supply as well as the starting index:
+
+```solidity
+contract RareToken is ERC721, LinarlyAssigned {
+  constructor()
+    ERC721("RareToken", "RT")
+    LinarlyAssigned(1000, 1) // Max. 1k NFTs available; Start counting from 1 (instead of 0)
+  {}
+
+  function mint () external {
+    uint256 newTokenId = nextToken(); // Create a new token ID
+
+    // ...
+  }
+}
+```
+
+#### `RandomlyAssigned.sol`
 (Semi-)randomly* assign token IDs from a fixed collection size on mint.
 
 

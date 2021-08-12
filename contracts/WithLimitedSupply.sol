@@ -8,34 +8,33 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 abstract contract WithLimitedSupply {
     using Counters for Counters.Counter;
 
+    // Keeps track of how many we have minted
+    Counters.Counter private _tokenCount;
+
     /// @dev The maximum count of tokens this token tracker will hold.
     uint256 public maxSupply;
 
-    /// @dev The initial token ID
-    uint256 private startFrom;
-
-    /// @dev Keeps track of how many we have minted
-    Counters.Counter public tokenCount;
-
     /// Instanciate the contract
     /// @param _maxSupply how many tokens this collection should hold
-    constructor (uint256 _maxSupply, uint256 _startFrom) {
+    constructor (uint256 _maxSupply) {
         maxSupply = _maxSupply;
-        startFrom = _startFrom;
+    }
+
+    /// @dev Get the current token count
+    function tokenCount() public view returns (uint256) {
+        return _tokenCount.current();
+    }
+
+    /// @dev Increment the token count and fetch the latest count
+    function nextToken() internal virtual ensureAvailability returns (uint256) {
+        _tokenCount.increment();
+
+        return _tokenCount.current();
     }
 
     /// @dev Check whether tokens are still available
     modifier ensureAvailability() {
-        require(tokenCount.current() < maxSupply, "No more tokens available");
+        require(tokenCount() < maxSupply, "No more tokens available");
         _;
-    }
-
-    /// Get the next token ID
-    /// @dev Gets the next available token ID and keeps track of how many are still available.
-    /// @return the next token ID
-    function nextToken() internal ensureAvailability returns (uint256) {
-        tokenCount.increment();
-
-        return tokenCount.current() + startFrom;
     }
 }
