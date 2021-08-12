@@ -17,7 +17,7 @@ contract MyToken is ERC721, WithSaleStart {
     WithSaleStart(1735686000)
   {}
 
-  function claim () external afterSaleStart returns (uint256) {
+  function claim () external afterSaleStart {
     // ...
   }
 }
@@ -52,8 +52,28 @@ contract OneForAllToken is ERC721, OnePerWallet {
 }
 ```
 
-### `IncrementingTokenIDs.sol`
-A simple token tracker that increments on each new mint.
+### `WithLimitedSupply.sol`
+A simple token tracker that limits the token supply and increments token IDs on each new mint.
+
+To keep track of the token supply and to get the next available tokenID, call `nextToken()` when creating new tokens.
+
+```solidity
+contract RareToken is ERC721, WithLimitedSupply {
+  constructor()
+    ERC721("RareToken", "RT")
+    WithLimitedSupply(1000) // Max. 1k NFTs available
+  {}
+
+  function mint () 
+    external 
+    ensureAvailability // Ensure tokens are still available
+  {
+    uint256 newTokenId = nextToken(); // Create a new token ID
+
+    // ...
+  }
+}
+```
 
 ### `RandomlyAssigned.sol`
 (Semi-) Randomly assign token IDs from a fixed collection size on mint.
