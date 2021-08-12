@@ -134,6 +134,15 @@ To change the contract metadat URI, call `setContractURI(string uri)` as the con
 ### `WithIPFSMetaData.sol`
 Handles linking to metadata files hosted on IPFS.
 
+```solidity
+contract CleanToken is ERC721, WithIPFSMetaData {
+  constructor()
+    ERC721("CleanToken", "CT")
+    WithIPFSMetaData("0123456789123456789123456789123456789123456789")
+  {}
+}
+```
+
 ### `WithFees.sol`
 Abstracts out the complexity of current fee standards.
 
