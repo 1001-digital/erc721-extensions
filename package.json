@@ -1,5 +1,5 @@
 {
-  "name": "@1001/erc721-contract-extensions",
+  "name": "@1001-digital/erc721-extensions",
   "version": "1.0.0",
   "description": "Composable smart contract extensions for the OpenZeppelin base contracts",
   "scripts": {
