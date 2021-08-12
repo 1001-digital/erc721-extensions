@@ -11,7 +11,6 @@ describe('WithSaleStartExample', async () => {
       buyer,
       addrs
 
-
   before(async () => {
     saleStart = (await ethers.provider.getBlock('latest')).timestamp + TWO_MINUTES
     WithSaleStartExample = await ethers.getContractFactory('WithSaleStartExample')
