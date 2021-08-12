@@ -59,7 +59,22 @@ A simple token tracker that increments on each new mint.
 (Semi-) Randomly assign token IDs from a fixed collection size on mint.
 
 ### `WithContractMetaData.sol`
-Link to your collection meta data right from within your smart contract.
+Link to your collection's contract meta data right from within your smart contract.
+
+Builds on `Ownable` and allows the contract owner to change contract metadata even after deployment.
+
+Make sure the URL links to an appropriate JSON file.
+
+```solidity
+contract Token is ERC721, WithContractMetadata {
+  constructor()
+    ERC721("Token", "LT")
+    WithContractMetadata("ipfs://0123456789123456789123456789123456789123456789/metadata.json")
+  {}
+}
+```
+
+To change the contract metadat URI, call `setContractURI(string uri)` as the contract owner.
 
 ### `WithIPFSMetaData.sol`
 Handles linking to metadata files hosted on IPFS.
