@@ -2,55 +2,45 @@
 A set of composable extensions for the [OpenZeppelin](https://openzeppelin.com/) ERC721 base contracts.
 
 ## Available Extensions
-### `WithSaleStart.sol`
-An extension that enables the contract owner to set and update the date of a public sale.
+### `WithContractMetaData.sol`
+Link to your collection's contract meta data right from within your smart contract.
 
-This builds upon the `Ownable` extension, so only contract deployers can change the sale start via `setSaleStart(uint256 time)`.
-Also, to stay true to the trustless spirit of NFTs, it is not possible to change the sale start after the initial sale started.
+Builds on `Ownable` and allows the contract owner to change contract metadata even after deployment.
 
-To use this in your project, call the `afterSaleStart` / `beforeSaleStart` modifiers.
+Make sure the URL links to an appropriate JSON file.
 
 ```solidity
-contract MyToken is ERC721, WithSaleStart {
+contract Token is ERC721, WithContractMetadata {
   constructor()
-    ERC721("MyToken", "MT")
-    WithSaleStart(1735686000)
+    ERC721("Token", "LT")
+    WithContractMetadata("ipfs://0123456789123456789123456789123456789123456789/metadata.json")
   {}
-
-  function claim () external afterSaleStart {
-    // ...
-  }
 }
 ```
 
-### `LimitedTokensPerWallet.sol`
-Limits the amount of tokens an external wallet can hold.
+To change the contract metadat URI, call `setContractURI(string uri)` as the contract owner.
+
+### `WithIPFSMetaData.sol`
+Handles linking to metadata files hosted on IPFS and follows best practices doing so:
+
+- Projects have to embed the Content ID hash in the contract right from the start
+- Project owners can never change the CID
+- Tokens link to an `ipfs://`-URL to be independent of particular IPFS Gateways.
+- Tokens wrap a folder with a `metadata.json` file (and pot. all the assets of the token).
+
+> **Note**: You should never publish metadata before public sale is complete.<br> <small>This is to prevent people from trying to snipe rare tokens (rarity can be derived from going through all metadata files and looking at the trait and attribute distributions). Although very expensive (in gas fees) to do so, it is potentially possible and thus bad practice.</small>
 
 ```solidity
-contract LimitedToken is ERC721, LimitedTokensPerWallet {
+contract CleanToken is ERC721, WithIPFSMetaData {
   constructor()
-    ERC721("LimitedToken", "LT")
-    LimitedTokensPerWallet(3) // Only allow three tokens per wallet
+    ERC721("CleanToken", "CT")
+    WithIPFSMetaData("0123456789123456789123456789123456789123456789")
   {}
-
-  // Mint & Transfer limits are taken care of by the library.
 }
 ```
 
-### `OnePerWallet.sol`
-A more extreme version of `LimitedTokensPerWallet`, which only allows holding one token in an external wallet address.
-
-To use this in your project just extend the Contract. If you need more control, call the `onePerWallet` modifier. 
-
-```solidity
-contract OneForAllToken is ERC721, OnePerWallet {
-  constructor()
-    ERC721("OneForAllToken", "OFA")
-  {}
-
-  // Mints and Transfer limites are taken care of by the library.
-}
-```
+#### `WithIPFSMetadataAndPreviewMetadata.sol`
+*TODO*
 
 ### `WithLimitedSupply.sol`
 A simple token tracker that limits the token supply.
@@ -113,45 +103,55 @@ contract RandomToken is ERC721, RandomlyAssigned {
 *) We can't create proper random numbers on chain. But this does the job well enough, if you hide your metadata during public sale and are not too valuable of an NFT project (pot. exploit costs a lot of gas, thus making it economically unfeasible to do for profit for 'normal' NFT collections). If you want true random assignment, check out [Chainlink](https://chain.link/).
 
 
-### `WithContractMetaData.sol`
-Link to your collection's contract meta data right from within your smart contract.
+### `WithSaleStart.sol`
+An extension that enables the contract owner to set and update the date of a public sale.
 
-Builds on `Ownable` and allows the contract owner to change contract metadata even after deployment.
+This builds upon the `Ownable` extension, so only contract deployers can change the sale start via `setSaleStart(uint256 time)`.
+Also, to stay true to the trustless spirit of NFTs, it is not possible to change the sale start after the initial sale started.
 
-Make sure the URL links to an appropriate JSON file.
+To use this in your project, call the `afterSaleStart` / `beforeSaleStart` modifiers.
 
 ```solidity
-contract Token is ERC721, WithContractMetadata {
+contract MyToken is ERC721, WithSaleStart {
   constructor()
-    ERC721("Token", "LT")
-    WithContractMetadata("ipfs://0123456789123456789123456789123456789123456789/metadata.json")
+    ERC721("MyToken", "MT")
+    WithSaleStart(1735686000)
   {}
+
+  function claim () external afterSaleStart {
+    // ...
+  }
 }
 ```
 
-To change the contract metadat URI, call `setContractURI(string uri)` as the contract owner.
-
-### `WithIPFSMetaData.sol`
-Handles linking to metadata files hosted on IPFS and follows best practices doing so:
-
-- Projects have to embed the Content ID hash in the contract right from the start
-- Project owners can never change the CID
-- Tokens link to an `ipfs://`-URL to be independent of particular IPFS Gateways.
-- Tokens wrap a folder with a `metadata.json` file (and pot. all the assets of the token).
-
-> **Note**: You should never publish metadata before public sale is complete.<br> <small>This is to prevent people from trying to snipe rare tokens (rarity can be derived from going through all metadata files and looking at the trait and attribute distributions). Although very expensive (in gas fees) to do so, it is potentially possible and thus bad practice.</small>
+### `LimitedTokensPerWallet.sol`
+Limits the amount of tokens an external wallet can hold.
 
 ```solidity
-contract CleanToken is ERC721, WithIPFSMetaData {
+contract LimitedToken is ERC721, LimitedTokensPerWallet {
   constructor()
-    ERC721("CleanToken", "CT")
-    WithIPFSMetaData("0123456789123456789123456789123456789123456789")
+    ERC721("LimitedToken", "LT")
+    LimitedTokensPerWallet(3) // Only allow three tokens per wallet
   {}
+
+  // Mint & Transfer limits are taken care of by the library.
 }
 ```
 
-#### `WithIPFSMetadataAndPreviewMetadata.sol`
-*TODO*
+### `OnePerWallet.sol`
+A more extreme version of `LimitedTokensPerWallet`, which only allows holding one token in an external wallet address.
+
+To use this in your project just extend the Contract. If you need more control, call the `onePerWallet` modifier. 
+
+```solidity
+contract OneForAllToken is ERC721, OnePerWallet {
+  constructor()
+    ERC721("OneForAllToken", "OFA")
+  {}
+
+  // Mints and Transfer limites are taken care of by the library.
+}
+```
 
 ### `WithFees.sol`
 Aims to abstracts out the complexity of current fee standards.
