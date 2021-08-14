@@ -1,6 +1,6 @@
 {
   "name": "@1001-digital/erc721-extensions",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Composable smart contract extensions for the OpenZeppelin base contracts",
   "scripts": {
     "test": "hardhat test",
@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/1001-digital/erc721-contract-extensions.git"
+    "url": "git+https://github.com/1001-digital/erc721-extensions.git"
   },
   "keywords": [
     "ethereum",
@@ -21,9 +21,9 @@
   "author": "jalil.eth",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/1001-digital/erc721-contract-extensions/issues"
+    "url": "https://github.com/1001-digital/erc721-extensions/issues"
   },
-  "homepage": "https://github.com/1001-digital/erc721-contract-extensions#readme",
+  "homepage": "https://github.com/1001-digital/erc721-extensions#readme",
   "peerDependencies": {
     "@openzeppelin/contracts": "^4.2.0"
   },
