@@ -26,8 +26,10 @@ abstract contract WithIPFSMetaData is ERC721 {
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
         require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
 
+        // We don't check whether the _baseURI is set like in the OpenZeppelin implementation
+        // as we're deploying the contract with the CID.
         return string(abi.encodePacked(
-            _baseURI(), "/", tokenId.toString(), ".json"
+            _baseURI(), "/", tokenId.toString(), "/metadata.json"
         ));
     }
 

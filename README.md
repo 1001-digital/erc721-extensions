@@ -132,7 +132,14 @@ contract Token is ERC721, WithContractMetadata {
 To change the contract metadat URI, call `setContractURI(string uri)` as the contract owner.
 
 ### `WithIPFSMetaData.sol`
-Handles linking to metadata files hosted on IPFS.
+Handles linking to metadata files hosted on IPFS and follows best practices doing so:
+
+- Projects have to embed the Content ID hash in the contract right from the start
+- Project owners can never change the CID
+- Tokens link to an `ipfs://`-URL to be independent of particular IPFS Gateways.
+- Tokens wrap a folder with a `metadata.json` file (and pot. all the assets of the token).
+
+> **Note**: You should never publish metadata before public sale is complete.<br> <small>This is to prevent people from trying to snipe rare tokens (rarity can be derived from going through all metadata files and looking at the trait and attribute distributions). Although very expensive (in gas fees) to do so, it is potentially possible and thus bad practice.</small>
 
 ```solidity
 contract CleanToken is ERC721, WithIPFSMetaData {
@@ -143,6 +150,9 @@ contract CleanToken is ERC721, WithIPFSMetaData {
 }
 ```
 
+#### `WithIPFSMetadataAndPreviewMetadata.sol`
+*TODO*
+
 ### `WithFees.sol`
 Aims to abstracts out the complexity of current fee standards.
 
@@ -150,7 +160,9 @@ Aims to abstracts out the complexity of current fee standards.
 contract SharedUpsideToken is ERC721, WithFees {
   constructor()
     ERC721("SharedUpsideToken", "SUP")
-    WithFees(0xe11Da9560b51f8918295edC5ab9c0a90E9ADa20B, 500) // 5% of secondary sales should go to the given address
+    // 500 Basis Points (5%) of secondary sales 
+    // should go to the given beneficiary address
+    WithFees(0xe11Da9560b51f8918295edC5ab9c0a90E9ADa20B, 500)
   {}
 
   function supportsInterface(bytes4 interfaceId) public view override(WithFees, ERC721) returns (bool) {
