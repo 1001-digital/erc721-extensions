@@ -12,18 +12,18 @@ abstract contract WithLimitedSupply {
     Counters.Counter private _tokenCount;
 
     /// @dev The maximum count of tokens this token tracker will hold.
-    uint256 private _maxSupply;
+    uint256 private _totalSupply;
 
     /// Instanciate the contract
-    /// @param maxSupply_ how many tokens this collection should hold
-    constructor (uint256 maxSupply_) {
-        _maxSupply = maxSupply_;
+    /// @param totalSupply_ how many tokens this collection should hold
+    constructor (uint256 totalSupply_) {
+        _totalSupply = totalSupply_;
     }
 
     /// @dev Get the max Supply
     /// @return the maximum token count
-    function maxSupply() public view returns (uint256) {
-        return _maxSupply;
+    function totalSupply() public view returns (uint256) {
+        return _totalSupply;
     }
 
     /// @dev Get the current token count
@@ -35,7 +35,7 @@ abstract contract WithLimitedSupply {
     /// @dev Check whether tokens are still available
     /// @return the available token count
     function availableTokenCount() public view returns (uint256) {
-        return maxSupply() - tokenCount();
+        return totalSupply() - tokenCount();
     }
 
     /// @dev Increment the token count and fetch the latest count

@@ -18,10 +18,10 @@ abstract contract RandomlyAssigned is WithLimitedSupply {
     uint256 private startFrom;
 
     /// Instanciate the contract
-    /// @param _maxSupply how many tokens this collection should hold
+    /// @param _totalSupply how many tokens this collection should hold
     /// @param _startFrom the tokenID with which to start counting
-    constructor (uint256 _maxSupply, uint256 _startFrom)
-        WithLimitedSupply(_maxSupply)
+    constructor (uint256 _totalSupply, uint256 _startFrom)
+        WithLimitedSupply(_totalSupply)
     {
         startFrom = _startFrom;
     }
@@ -30,7 +30,7 @@ abstract contract RandomlyAssigned is WithLimitedSupply {
     /// @dev Randomly gets a new token ID and keeps track of the ones that are still available.
     /// @return the next token ID
     function nextToken() internal override returns (uint256) {
-        uint256 maxIndex = maxSupply() - tokenCount();
+        uint256 maxIndex = totalSupply() - tokenCount();
         uint256 random = uint256(keccak256(
             abi.encodePacked(
                 nonce.current(),
@@ -61,7 +61,6 @@ abstract contract RandomlyAssigned is WithLimitedSupply {
 
         // Increment counts
         super.nextToken();
-        nonce.increment();
 
         return value + startFrom;
     }

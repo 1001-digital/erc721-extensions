@@ -11,10 +11,10 @@ abstract contract LinearlyAssigned is WithLimitedSupply {
     uint256 private startFrom;
 
     /// Instanciate the contract
-    /// @param _maxSupply how many tokens this collection should hold
+    /// @param _totalSupply how many tokens this collection should hold
     /// @param _startFrom the tokenID with which to start counting
-    constructor (uint256 _maxSupply, uint256 _startFrom)
-        WithLimitedSupply(_maxSupply)
+    constructor (uint256 _totalSupply, uint256 _startFrom)
+        WithLimitedSupply(_totalSupply)
     {
         startFrom = _startFrom;
     }
