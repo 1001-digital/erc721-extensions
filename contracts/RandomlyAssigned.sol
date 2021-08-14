@@ -11,7 +11,6 @@ abstract contract RandomlyAssigned is WithLimitedSupply {
     using Counters for Counters.Counter;
 
     // Used for random index assignment
-    Counters.Counter internal nonce;
     mapping(uint256 => uint256) private tokenMatrix;
 
     // The initial token ID
@@ -33,10 +32,10 @@ abstract contract RandomlyAssigned is WithLimitedSupply {
         uint256 maxIndex = totalSupply() - tokenCount();
         uint256 random = uint256(keccak256(
             abi.encodePacked(
-                nonce.current(),
                 msg.sender,
                 block.coinbase,
                 block.difficulty,
+                block.gaslimit,
                 block.timestamp
             )
         )) % maxIndex;
