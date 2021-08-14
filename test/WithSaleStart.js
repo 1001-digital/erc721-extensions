@@ -1,11 +1,11 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
 
-describe('WithSaleStartExample', async () => {
+describe('WithSaleStart', async () => {
   const TWO_MINUTES = 120
 
   let saleStart,
-      WithSaleStartExample,
+      WithSaleStart,
       contract,
       owner,
       buyer,
@@ -13,11 +13,11 @@ describe('WithSaleStartExample', async () => {
 
   before(async () => {
     saleStart = (await ethers.provider.getBlock('latest')).timestamp + TWO_MINUTES
-    WithSaleStartExample = await ethers.getContractFactory('WithSaleStartExample')
+    WithSaleStart = await ethers.getContractFactory('WithSaleStartExample')
   })
 
   beforeEach(async () => {
-    contract = await WithSaleStartExample.deploy(saleStart);
+    contract = await WithSaleStart.deploy(saleStart);
     [ owner, buyer, ...addrs ] = await ethers.getSigners()
   })
 
