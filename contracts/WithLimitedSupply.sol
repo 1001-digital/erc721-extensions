@@ -41,9 +41,11 @@ abstract contract WithLimitedSupply {
     /// @dev Increment the token count and fetch the latest count
     /// @return the next token id
     function nextToken() internal virtual ensureAvailability returns (uint256) {
+        uint256 token = _tokenCount.current();
+
         _tokenCount.increment();
 
-        return _tokenCount.current();
+        return token;
     }
 
     /// @dev Check whether tokens are still available

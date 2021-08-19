@@ -23,8 +23,10 @@ abstract contract LinearlyAssigned is WithLimitedSupply {
     /// @dev Gets the next available token ID and keeps track of how many are still available.
     /// @return the next token ID
     function nextToken() internal virtual override returns (uint256) {
+        uint256 token = tokenCount() + startFrom;
+
         super.nextToken();
 
-        return tokenCount() + startFrom;
+        return token;
     }
 }
