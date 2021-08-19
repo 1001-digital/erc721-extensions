@@ -69,6 +69,8 @@ contract RareToken is ERC721, WithLimitedSupply {
 }
 ```
 
+The internal `nextToken()` method automatically checks whether tokens are available via the `ensureAvailability` modifier. If you implement minting multiple tokens within the same transaction, you should check availability with the `ensureAvailabilityFor(amount)` helper.
+
 There are two Contracts that build on this: `LinearlyAssigned`, which adds the option of starting the token tracker from a specific number and `RandomlyAssigned`, wich enables semi random token ID assignments.
 
 #### `LinearlyAssigned.sol`
@@ -107,8 +109,7 @@ contract RandomToken is ERC721, RandomlyAssigned {
 }
 ```
 
-*) We can't create proper random numbers on chain. But this does the job well enough, if you hide your metadata during public sale and are not too valuable of an NFT project (pot. exploit costs a lot of gas, thus making it economically unfeasible to do for profit for 'normal' NFT collections). If you want true random assignment, check out [Chainlink](https://chain.link/).
-
+> *) We can't create proper random numbers on chain. But this does the job well enough, if you hide your metadata during public sale and are not too valuable of an NFT project (pot. exploit costs a lot of gas, thus making it economically unfeasible to do for profit for 'normal' NFT collections). If you want true random assignment, check out [Chainlink](https://chain.link/).
 
 ### `WithSaleStart.sol`
 An extension that enables the contract owner to set and update the date of a public sale.

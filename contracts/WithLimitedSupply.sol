@@ -48,9 +48,16 @@ abstract contract WithLimitedSupply {
         return token;
     }
 
-    /// @dev Check whether tokens are still available
+    /// @dev Check whether another token is still available
     modifier ensureAvailability() {
         require(availableTokenCount() > 0, "No more tokens available");
+        _;
+    }
+
+    /// @param amount Check whether number of tokens are still available
+    /// @dev Check whether tokens are still available
+    modifier ensureAvailabilityFor(uint256 amount) {
+        require(availableTokenCount() >= amount, "Requested number of tokens not available");
         _;
     }
 }
