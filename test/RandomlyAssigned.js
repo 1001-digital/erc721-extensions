@@ -1,5 +1,6 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
+const { arrayOfLength } = require('../helpers/array')
 
 describe('RandomlyAssigned', async () => {
   let RandomlyAssigned,
@@ -13,7 +14,7 @@ describe('RandomlyAssigned', async () => {
   })
 
   beforeEach(async () => {
-    contract = await RandomlyAssigned.deploy();
+    contract = await RandomlyAssigned.deploy(20, 1);
     [ owner, buyer, ...addrs ] = await ethers.getSigners()
   })
 
@@ -22,12 +23,12 @@ describe('RandomlyAssigned', async () => {
   })
 
   it('Mints all tokens in random order', async () => {
-    const incrementingTokenIds = JSON.stringify([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20])
+    const incrementingTokenIds = JSON.stringify(arrayOfLength(20))
     const tokenIDs = []
     let sold = 0
 
     while (sold < 20) {
-      const transaction = await contract.connect(buyer).mint()
+      const transaction = await contract.connect(buyer).mint(1)
       const receipt = await transaction.wait()
       const tokenID = receipt.events?.find(e => e.event === 'Transfer').args.tokenId
       tokenIDs.push(parseInt(tokenID.toString()))
@@ -41,13 +42,34 @@ describe('RandomlyAssigned', async () => {
     let sold = 0
 
     while (sold < 20) {
-      await contract.connect(buyer).mint()
+      await contract.connect(buyer).mint(1)
       sold ++
     }
 
-    expect(await contract.tokenCount()).to.equal(20)
+    expect(await contract.balanceOf(buyer.address)).to.equal(20)
 
-    await expect(contract.connect(buyer).mint())
-                .to.be.revertedWith('No more tokens available')
+    await expect(contract.connect(buyer).mint(1))
+                .to.be.revertedWith('Requested number of tokens not available')
+  })
+
+  it('Works when minting multiple tokens within the same transaction', async () => {
+    const transaction = await contract.connect(buyer).mint(20)
+    const receipt = await transaction.wait()
+
+    const expectedIDs = arrayOfLength(20)
+    const actualIDs = receipt.events?.filter(e => e.event === 'Transfer')
+                                     .map(e => e.args.tokenId.toNumber())
+
+    expect(JSON.stringify(expectedIDs))
+      .to.equal(JSON.stringify(actualIDs.sort((a, b) => a > b ? 1 : -1)))
+
+    expectedIDs.forEach(
+      async id => expect(await contract.ownerOf(id)).to.equal(buyer.address)
+    )
+  })
+
+  it('Throws when trying to mint more than are available', async () => {
+      await expect(contract.connect(buyer).mint(21))
+        .to.be.revertedWith('Requested number of tokens not available')
   })
 })

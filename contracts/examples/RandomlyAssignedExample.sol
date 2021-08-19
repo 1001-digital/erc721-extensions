@@ -6,16 +6,19 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./../RandomlyAssigned.sol";
 
 contract RandomlyAssignedExample is ERC721, RandomlyAssigned {
-  constructor()
-    ERC721("RandomToken", "RT")
-    RandomlyAssigned(20, 1) // Max 20 tokens, starting with #1
-  {}
+    constructor(
+        uint256 amount,
+        uint256 startFrom
+    )
+        ERC721("RandomToken", "RT")
+        RandomlyAssigned(amount, startFrom)
+    {}
 
-  function mint () external returns (uint256) {
-    uint256 tokenId = nextToken();
-
-    _safeMint(msg.sender, tokenId);
-
-    return tokenId;
-  }
+    function mint (uint256 amount) external
+        ensureAvailabilityFor(amount)
+    {
+        for (uint256 index = 0; index < amount; index++) {
+            _safeMint(msg.sender, nextToken());
+        }
+    }
 }
