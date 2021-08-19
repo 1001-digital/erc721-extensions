@@ -24,7 +24,7 @@ abstract contract RandomlyAssigned is WithLimitedSupply {
     /// Get the next token ID
     /// @dev Randomly gets a new token ID and keeps track of the ones that are still available.
     /// @return the next token ID
-    function nextToken() internal override returns (uint256) {
+    function nextToken() internal override ensureAvailability returns (uint256) {
         uint256 maxIndex = totalSupply() - tokenCount();
         uint256 random = uint256(keccak256(
             abi.encodePacked(
