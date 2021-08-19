@@ -45,6 +45,8 @@ contract CleanToken is ERC721, WithIPFSMetaData {
 ### `WithTransferTimeLock.sol`
 To prevent an attack vector right after public sale of tokens, this extension adds a timelock to transfers for 12 hours after initial sale. This gives all buyers enough time to familiarise themselves with their tokens and the entire collection, as well as the rarities of items.
 
+Alternatively: Publish the entire collection without tokenIDs from the get go / or at least all rarity statistics.
+
 *TODO*
 
 ### `WithLimitedSupply.sol`
