@@ -43,11 +43,22 @@ describe('WithMarketOffers', async () => {
       })
 
       it('Should allow a buyer to purchase an offered item', async () => {
+        expect(await contract.ownerOf(1)).to.equal(seller.address)
+
         await contract.connect(seller).makeOffer(1, price)
 
         await expect(contract.connect(buyer).buy(1, { value: price }))
           .to.emit(contract, 'Sale')
           .withArgs(1, seller.address, buyer.address, price)
+
+        expect(await contract.ownerOf(1)).to.equal(buyer.address)
+      })
+
+      it('Should not allow a buyer to purchase an item offered for less than the set price', async () => {
+        await contract.connect(seller).makeOffer(1, price)
+
+        await expect(contract.connect(buyer).buy(1, { value: price.sub(1) }))
+          .to.be.revertedWith('Price not met')
       })
 
       it('Should not allow a buyer to purchase an item that is not offered', async () => {
@@ -58,8 +69,19 @@ describe('WithMarketOffers', async () => {
         await expect(contract.connect(buyer).buy(1, { value: price }))
           .to.emit(contract, 'Sale')
           .withArgs(1, seller.address, buyer.address, price)
+          .to.emit(contract, 'Transfer')
+          .withArgs(seller.address, buyer.address, 1)
+      })
+
+      it('Should allow a seller to cancel an active offer', async () => {
+        await contract.connect(seller).makeOffer(1, price)
+        await expect(contract.connect(seller).cancelOffer(1))
+          .to.emit(contract, 'OfferWithdrawn')
+          .withArgs(1)
+
+        await expect(contract.offerFor(1))
+          .to.be.revertedWith('No active offer for this item')
       })
     })
-
   })
 })

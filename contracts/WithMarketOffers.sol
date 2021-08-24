@@ -45,6 +45,13 @@ abstract contract WithMarketOffers is ERC721 {
         _makeOffer(tokenId, price, to);
     }
 
+    /// @dev Revoke an active offer
+    function cancelOffer(uint256 tokenId) external {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
+        delete _offers[tokenId];
+        emit OfferWithdrawn(tokenId);
+    }
+
     /// @dev Buy an item that is for offer
     function buy(uint256 tokenId) external payable isForSale(tokenId) {
         Offer memory offer = _offers[tokenId];
