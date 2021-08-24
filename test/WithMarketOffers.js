@@ -47,9 +47,14 @@ describe('WithMarketOffers', async () => {
 
         await contract.connect(seller).makeOffer(1, price)
 
-        await expect(contract.connect(buyer).buy(1, { value: price }))
+        await expect(await contract.connect(buyer).buy(1, { value: price }))
           .to.emit(contract, 'Sale')
           .withArgs(1, seller.address, buyer.address, price)
+          .to.emit(contract, 'Transfer')
+          .withArgs(seller.address, buyer.address, 1)
+          .to.changeEtherBalance(seller, price, {
+            provider: ethers.getDefaultProvider(),
+          })
 
         expect(await contract.ownerOf(1)).to.equal(buyer.address)
       })
@@ -64,13 +69,6 @@ describe('WithMarketOffers', async () => {
       it('Should not allow a buyer to purchase an item that is not offered', async () => {
         await expect(contract.connect(buyer).buy(1, { value: price }))
           .to.be.revertedWith('Item not for sale')
-
-        await contract.connect(seller).makeOffer(1, price)
-        await expect(contract.connect(buyer).buy(1, { value: price }))
-          .to.emit(contract, 'Sale')
-          .withArgs(1, seller.address, buyer.address, price)
-          .to.emit(contract, 'Transfer')
-          .withArgs(seller.address, buyer.address, 1)
       })
 
       it('Should allow a seller to cancel an active offer', async () => {
