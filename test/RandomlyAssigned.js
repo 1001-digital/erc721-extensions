@@ -23,7 +23,7 @@ describe('RandomlyAssigned', async () => {
   })
 
   it('Mints all tokens in random order', async () => {
-    const incrementingTokenIds = JSON.stringify(arrayOfLength(20))
+    const incrementingTokenIds = arrayOfLength(20)
     const tokenIDs = []
     let sold = 0
 
@@ -35,7 +35,7 @@ describe('RandomlyAssigned', async () => {
       sold ++
     }
 
-    expect(JSON.stringify(tokenIDs)).to.not.equal(incrementingTokenIds)
+    expect(tokenIDs).to.not.eql(incrementingTokenIds)
   })
 
   it('Mints all tokens, then fails on further tries', async () => {
@@ -60,8 +60,8 @@ describe('RandomlyAssigned', async () => {
     const actualIDs = receipt.events?.filter(e => e.event === 'Transfer')
                                      .map(e => e.args.tokenId.toNumber())
 
-    expect(JSON.stringify(expectedIDs))
-      .to.equal(JSON.stringify(actualIDs.sort((a, b) => a > b ? 1 : -1)))
+    expect(expectedIDs)
+      .to.eql(actualIDs.sort((a, b) => a > b ? 1 : -1))
 
     expectedIDs.forEach(
       async id => expect(await contract.ownerOf(id)).to.equal(buyer.address)
