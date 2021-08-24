@@ -161,6 +161,11 @@ contract OneForAllToken is ERC721, OnePerWallet {
 }
 ```
 
+### `WithMarketOffers.sol`
+Implements a simple offer based marketplace. Owners of tokens can choose to sell them via the in-built market.
+
+Just extend the `WithMarketOffers.sol` contract to make this work.
+
 ### `WithFees.sol`
 Aims to abstracts out the complexity of current fee standards.
 
