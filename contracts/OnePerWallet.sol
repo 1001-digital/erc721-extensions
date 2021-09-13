@@ -11,12 +11,25 @@ abstract contract OnePerWallet is ERC721 {
     mapping (address => uint256) private _ownedToken;
 
     /// Require an externally owned account to only hold one token.
-    /// @param wallet the address of
+    /// @param wallet the address to check
     /// @dev Only allow one token per wallet
     modifier onePerWallet(address wallet) {
         if (CheckAddress.isExternal(wallet)) {
             require(_ownedToken[wallet] == 0, "Can only hold one token per wallet");
         }
+
+        _;
+    }
+
+    /// Require any account on the network to only hold one token.
+    /// @param account the address to checkk
+    /// @dev Only allow one token per account
+    modifier onePerAccount(address account) {
+        require(
+            msg.sender == tx.origin &&
+            _ownedToken[account] == 0,
+            "Can only hold one token per account"
+        );
 
         _;
     }

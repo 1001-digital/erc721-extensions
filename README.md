@@ -161,6 +161,8 @@ contract OneForAllToken is ERC721, OnePerWallet {
 }
 ```
 
+> The above code does not prevent people from minting multiple tokens via a separate smart contract - it only checks against externally owned accounts (wallets with private keys). If you want to account for that, additionally activate the `onePerAccount` modifier on your mint function.
+
 ### `WithMarketOffers.sol`
 Implements a simple offer based marketplace. Owners of tokens can choose to sell them via the in-built market.
 
