@@ -57,6 +57,11 @@ abstract contract WithMarketOffers is ERC721 {
         Offer memory offer = _offers[tokenId];
         address payable seller = payable(ownerOf(tokenId));
 
+        // If it is a private sale, make sure the buyer is the private sale recipient.
+        if (offer.specificBuyer != address(0)) {
+            require(offer.specificBuyer == msg.sender, "Can't buy a privately offered item");
+        }
+
         require(msg.value >= offer.price, "Price not met");
         seller.transfer(offer.price);
         _safeTransfer(seller, msg.sender, tokenId, "");
