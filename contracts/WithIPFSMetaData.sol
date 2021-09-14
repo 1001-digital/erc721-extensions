@@ -16,7 +16,7 @@ abstract contract WithIPFSMetaData is ERC721 {
     /// @param _cid the content identifier for the token metadata.
     /// @dev be careful & make sure your metadata is correct - you can't change this
     constructor (string memory _cid) {
-        cid = _cid;
+        _setCID(_cid);
     }
 
     /// Get the tokenURI for a tokenID
@@ -38,5 +38,12 @@ abstract contract WithIPFSMetaData is ERC721 {
     /// @return the IPFS base uri
     function _baseURI() internal view virtual override returns (string memory) {
         return string(abi.encodePacked("ipfs://", cid));
+    }
+
+    /// Set the content identifier for this collection.
+    /// @param _cid the new content identifier
+    /// @dev update the content identifier for this nft.
+    function _setCID(string memory _cid) internal virtual {
+        cid = _cid;
     }
 }
