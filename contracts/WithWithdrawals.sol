@@ -9,7 +9,7 @@ abstract contract WithWithdrawals is Ownable
 {
     /// Withdraws the ETH stored in the contract.
     /// @dev only the owner can withdraw funds.
-    function withdraw() payable onlyOwner public {
+    function withdraw() onlyOwner public {
         payable(owner()).transfer(address(this).balance);
     }
 }
