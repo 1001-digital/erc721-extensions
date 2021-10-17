@@ -193,7 +193,7 @@ Just call `withdraw` as the contract owner.
 
 ## Installation
 1. In your project run `npm install @1001-digital/erc721-exensions`
-2. Within your project, import the extensions you want to use like `import "@1001-digital/erc721-exensions/contracts/WithIPFSMetaData.sol";`
+2. Within your project, import the extensions you want to use like `import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";`
 
 ## Local Development
 This project uses the [Hardhat](https://hardhat.org/) development environment. To set it up locally, clone this repository and run `npm install`.
