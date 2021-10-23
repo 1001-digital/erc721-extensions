@@ -192,7 +192,7 @@ A simple helper that implements a withdrawal function.
 Just call `withdraw` as the contract owner.
 
 ## Installation
-1. In your project run `npm install @1001-digital/erc721-exensions`
+1. In your project run `npm install @1001-digital/erc721-extensions`
 2. Within your project, import the extensions you want to use like `import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";`
 
 ## Local Development
