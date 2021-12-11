@@ -61,7 +61,7 @@ contract RareToken is ERC721, WithLimitedSupply {
     WithLimitedSupply(1000) // Max. 1k NFTs available
   {}
 
-  function mint () external {
+  function mint () external ensureAvailability() {
     uint256 newTokenId = nextToken(); // Create a new token ID
 
     // ...
@@ -69,7 +69,7 @@ contract RareToken is ERC721, WithLimitedSupply {
 }
 ```
 
-The internal `nextToken()` method automatically checks whether tokens are available via the `ensureAvailability` modifier. If you implement minting multiple tokens within the same transaction, you should check availability with the `ensureAvailabilityFor(amount)` helper.
+The internal `nextToken()` method does not automatically check whether tokens are available but `WithLimitedSupply` provides the `ensureAvailability` modifier that you can attach to your minting function. If you implement minting multiple tokens within the same transaction, you should check availability with the `ensureAvailabilityFor(amount)` modifier.
 
 There are two Contracts that build on this: `LinearlyAssigned`, which adds the option of starting the token tracker from a specific number and `RandomlyAssigned`, wich enables semi random token ID assignments.
 
@@ -83,7 +83,7 @@ contract RareToken is ERC721, LinarlyAssigned {
     LinarlyAssigned(1000, 1) // Max. 1k NFTs available; Start counting from 1 (instead of 0)
   {}
 
-  function mint () external {
+  function mint () external ensureAvailability() {
     uint256 newTokenId = nextToken(); // Create a new token ID
 
     // ...
@@ -101,7 +101,7 @@ contract RandomToken is ERC721, RandomlyAssigned {
     RandomlyAssigned(1000, 1) // Max. 1k NFTs available; Start counting from 1 (instead of 0)
   {}
 
-  function mint () external {
+  function mint () external ensureAvailability() {
     uint256 newTokenId = nextToken(); // Create a new random token ID
 
     // ...
