@@ -24,12 +24,19 @@ abstract contract WithAdditionalMints is WithLimitedSupply, WithIPFSMetaData, Ow
         _setSupply(totalSupply() + _count);
     }
 
+    /// @param _cid The new collection CID which holds the metadata for the updated collection.
+    /// @param _to The owner of the new token.
+    /// @dev Add and mint a new token
     function mintAdditionalToken(string memory _cid, address _to) public onlyOwner {
         addToken(_cid);
 
         _safeMint(_to, nextToken());
     }
 
+    /// @param _cid The new collection CID which holds the metadata for the updated collection.
+    /// @param _count The number of tokens to mint.
+    /// @param _to The owner of the new tokens.
+    /// @dev Add and mint new tokens
     function mintAdditionalTokens(string memory _cid, uint256 _count, address _to) public onlyOwner {
         addTokens(_cid, _count);
 
