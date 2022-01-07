@@ -25,8 +25,8 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
     // Token symbol
     string private _symbol;
 
-    // Mapping from token ID to owner address
-    mapping(uint256 => address) private _owners;
+    // A list of all token owners
+    address[] internal _owners;
 
     // Mapping owner address to token count
     mapping(address => uint256) private _balances;
@@ -221,7 +221,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
      * and stop existing when they are burned (`_burn`).
      */
     function _exists(uint256 tokenId) internal view virtual returns (bool) {
-        return _owners[tokenId] != address(0);
+        return tokenId < _owners.length && _owners[tokenId] != address(0);
     }
 
     /**
@@ -286,7 +286,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         _beforeTokenTransfer(address(0), to, tokenId);
 
         _balances[to] += 1;
-        _owners[tokenId] = to;
+        _owners.push(to);
 
         emit Transfer(address(0), to, tokenId);
     }
@@ -310,7 +310,7 @@ contract ERC721 is Context, ERC165, IERC721, IERC721Metadata {
         _approve(address(0), tokenId);
 
         _balances[owner] -= 1;
-        delete _owners[tokenId];
+        _owners[tokenId] = address(0);
 
         emit Transfer(owner, address(0), tokenId);
     }
