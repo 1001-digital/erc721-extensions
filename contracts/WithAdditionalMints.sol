@@ -23,4 +23,18 @@ abstract contract WithAdditionalMints is WithLimitedSupply, WithIPFSMetaData, Ow
         _setCID(_cid);
         _setSupply(totalSupply() + _count);
     }
+
+    function mintAdditionalToken(string memory _cid, address _to) public onlyOwner {
+        addToken(_cid);
+
+        _safeMint(_to, nextToken());
+    }
+
+    function mintAdditionalTokens(string memory _cid, uint256 _count, address _to) public onlyOwner {
+        addTokens(_cid, _count);
+
+        for (uint256 index = 0; index < _count; index++) {
+            _safeMint(_to, nextToken());
+        }
+    }
 }
