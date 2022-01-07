@@ -38,41 +38,39 @@ describe('WithAdditionalMints', async () => {
       .to.be.revertedWith('No more tokens available')
   })
 
-  it('Mints all tokens, then allows owner to create additional supply', async () => {
+  describe('Additional Supply', () => {
     const UPDATED_CID = 'UPADATED_CID'
-    let sold = 0
 
-    while (sold < 5) {
-      await contract.connect(buyer).mint()
-      sold += 1
-    }
+    beforeEach(async () => {
+      let sold = 0
 
-    await expect(contract.connect(owner).addToken(UPDATED_CID))
-      .to.emit(contract, 'SupplyChanged')
-      .withArgs(6)
+      while (sold < 5) {
+        await contract.connect(buyer).mint()
+        sold += 1
+      }
+    })
 
-    await expect(contract.connect(buyer).mint())
-      .to.emit(contract, 'Transfer')
-      .withArgs(ethers.constants.AddressZero, buyer.address, 6)
+    it('Mints all tokens, then allows owner to create additional supply', async () => {
+      await expect(contract.connect(owner).addToken(UPDATED_CID))
+        .to.emit(contract, 'SupplyChanged')
+        .withArgs(6)
+
+      await expect(contract.connect(buyer).mint())
+        .to.emit(contract, 'Transfer')
+        .withArgs(ethers.constants.AddressZero, buyer.address, 6)
 
       await expect(contract.connect(buyer).mint())
         .to.be.revertedWith('No more tokens available')
+    })
+
+    it('Mints all tokens, then allows owner to mint an additional token', async () => {
+      await expect(contract.connect(owner).mintAdditionalToken(UPDATED_CID, owner.address))
+      .to.emit(contract, 'Transfer')
+      .withArgs(ethers.constants.AddressZero, owner.address, 6)
+
+      await expect(contract.connect(buyer).mint())
+        .to.be.revertedWith('No more tokens available')
+    })
   })
 
-  it('Mints all tokens, then allows owner to mint an additional token', async () => {
-    const UPDATED_CID = 'UPADATED_CID'
-    let sold = 0
-
-    while (sold < 5) {
-      await contract.connect(buyer).mint()
-      sold += 1
-    }
-
-    await expect(contract.connect(owner).mintAdditionalToken(UPDATED_CID, owner.address))
-    .to.emit(contract, 'Transfer')
-    .withArgs(ethers.constants.AddressZero, owner.address, 6)
-
-    await expect(contract.connect(buyer).mint())
-      .to.be.revertedWith('No more tokens available')
-  })
 })
