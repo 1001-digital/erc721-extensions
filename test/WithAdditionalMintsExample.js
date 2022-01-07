@@ -1,6 +1,5 @@
 const { expect } = require('chai')
 const { ethers } = require('hardhat')
-const { arrayOfLength } = require('../helpers/array')
 
 const CID = 'META_DATA_CID'
 
