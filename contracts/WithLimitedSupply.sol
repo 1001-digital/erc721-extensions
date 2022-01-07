@@ -8,6 +8,9 @@ import "@openzeppelin/contracts/utils/Counters.sol";
 abstract contract WithLimitedSupply {
     using Counters for Counters.Counter;
 
+    /// @dev Emitted when the supply of this collection changes
+    event SupplyChanged(uint256 indexed supply);
+
     // Keeps track of how many we have minted
     Counters.Counter private _tokenCount;
 
@@ -59,5 +62,15 @@ abstract contract WithLimitedSupply {
     modifier ensureAvailabilityFor(uint256 amount) {
         require(availableTokenCount() >= amount, "Requested number of tokens not available");
         _;
+    }
+
+    /// Update the supply for the collection
+    /// @param _supply the new token supply.
+    /// @dev create additional token supply for this collection.
+    function _setSupply(uint256 _supply) internal virtual {
+        require(_supply > tokenCount(), "Can't set the supply to less than the current token count");
+        _totalSupply = _supply;
+
+        emit SupplyChanged(totalSupply());
     }
 }

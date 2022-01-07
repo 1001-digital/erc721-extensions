@@ -9,6 +9,9 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 abstract contract WithIPFSMetaData is ERC721 {
     using Strings for uint256;
 
+    /// @dev Emitted when the content identifyer changes
+    event MetadataURIChanged(string indexed baseURI);
+
     /// @dev The content identifier of the folder containing all JSON files.
     string public cid;
 
@@ -45,5 +48,7 @@ abstract contract WithIPFSMetaData is ERC721 {
     /// @dev update the content identifier for this nft.
     function _setCID(string memory _cid) internal virtual {
         cid = _cid;
+
+        emit MetadataURIChanged(_baseURI());
     }
 }
