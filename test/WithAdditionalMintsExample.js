@@ -38,7 +38,7 @@ describe('WithAdditionalMints', async () => {
       .to.be.revertedWith('No more tokens available')
   })
 
-  describe('Additional Supply', () => {
+  describe('Mints all tokens', () => {
     const UPDATED_CID = 'UPADATED_CID'
 
     beforeEach(async () => {
@@ -50,7 +50,12 @@ describe('WithAdditionalMints', async () => {
       }
     })
 
-    it('Mints all tokens, then allows owner to create additional supply', async () => {
+    afterEach(async () => {
+      await expect(contract.connect(buyer).mint())
+        .to.be.revertedWith('No more tokens available')
+    })
+
+    it('then allows owner to create additional supply', async () => {
       await expect(contract.connect(owner).addToken(UPDATED_CID))
         .to.emit(contract, 'SupplyChanged')
         .withArgs(6)
@@ -58,18 +63,20 @@ describe('WithAdditionalMints', async () => {
       await expect(contract.connect(buyer).mint())
         .to.emit(contract, 'Transfer')
         .withArgs(ethers.constants.AddressZero, buyer.address, 6)
-
-      await expect(contract.connect(buyer).mint())
-        .to.be.revertedWith('No more tokens available')
     })
 
-    it('Mints all tokens, then allows owner to mint an additional token', async () => {
+    it('then allows owner to mint an additional token', async () => {
       await expect(contract.connect(owner).mintAdditionalToken(UPDATED_CID, owner.address))
-      .to.emit(contract, 'Transfer')
-      .withArgs(ethers.constants.AddressZero, owner.address, 6)
+        .to.emit(contract, 'Transfer')
+        .withArgs(ethers.constants.AddressZero, owner.address, 6)
+    })
 
-      await expect(contract.connect(buyer).mint())
-        .to.be.revertedWith('No more tokens available')
+    it('then allows owner to mint multiple additional tokens', async () => {
+      await expect(contract.connect(owner).mintAdditionalTokens(UPDATED_CID, 5, buyer.address))
+        .to.emit(contract, 'Transfer')
+        .withArgs(ethers.constants.AddressZero, buyer.address, 6)
+        .to.emit(contract, 'Transfer')
+        .withArgs(ethers.constants.AddressZero, buyer.address, 10)
     })
   })
 
