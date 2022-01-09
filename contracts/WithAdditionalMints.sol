@@ -19,7 +19,7 @@ abstract contract WithAdditionalMints is WithLimitedSupply, WithIPFSMetaData, Ow
     /// @param _cid The new collection CID which holds the metadata for the updated collection.
     /// @param _count The count of additional tokens.
     /// @dev Add a new token to the supply
-    function addTokens(string memory _cid, uint256 _count) public onlyOwner {
+    function addTokens(string memory _cid, uint256 _count) public virtual onlyOwner {
         _setCID(_cid);
         _setSupply(totalSupply() + _count);
     }
