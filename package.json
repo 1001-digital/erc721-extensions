@@ -1,6 +1,6 @@
 {
   "name": "@1001-digital/erc721-extensions",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "Composable smart contract extensions for the OpenZeppelin base contracts",
   "scripts": {
     "test": "hardhat test",
