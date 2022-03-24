@@ -54,10 +54,15 @@ abstract contract WithMarketOffers is ERC721, WithFees {
     }
 
     /// @dev Revoke an active offer
-    function cancelOffer(uint256 tokenId) external {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
+    function _cancelOffer(uint256 tokenId) private {
         delete _offers[tokenId];
         emit OfferWithdrawn(tokenId);
+    }
+
+    /// @dev Allow approved operators to cancel an offer
+    function cancelOffer(uint256 tokenId) external {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
+        _cancelOffer(tokenId);
     }
 
     /// @dev Buy an item that is for offer
@@ -78,7 +83,6 @@ abstract contract WithMarketOffers is ERC721, WithFees {
         // We transfer the token.
         _safeTransfer(seller, msg.sender, tokenId, "");
         emit Sale(tokenId, seller, msg.sender, offer.price);
-        delete _offers[tokenId];
     }
 
     /// @dev Check whether the token is for sale
@@ -93,6 +97,12 @@ abstract contract WithMarketOffers is ERC721, WithFees {
         returns (bool)
     {
         return WithFees.supportsInterface(interfaceId);
+    }
+
+    function _beforeTokenTransfer(address, address, uint256 tokenId) internal virtual override(ERC721) {
+        if (_offers[tokenId].price > 0) {
+            _cancelOffer(tokenId);
+        }
     }
 
 }
