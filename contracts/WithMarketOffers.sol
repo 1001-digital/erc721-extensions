@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 /// @author 1001.digital
-/// @title Implement a basic integrated marketplace
-abstract contract WithMarketOffers is ERC721 {
+/// @title Implement a basic integrated marketplace with fees
+abstract contract WithMarketOffers is ERC721, WithFees {
 
     event OfferCreated(uint256 indexed tokenId, uint256 indexed value, address indexed to);
     event OfferWithdrawn(uint256 indexed tokenId);
@@ -18,6 +19,13 @@ abstract contract WithMarketOffers is ERC721 {
 
     /// @dev All active offers
     mapping (uint256 => Offer) private _offers;
+
+    /// Instantiate the contract
+    /// @param _feeRecipient the fee recipient for secondary sales
+    /// @param _bps the basis points measure for the fees
+    constructor (address payable _feeRecipient, uint256 _bps)
+        WithFees(_feeRecipient, _bps)
+    {}
 
     /// @dev All active offers
     function offerFor(uint256 tokenId) external view returns(Offer memory) {
@@ -63,9 +71,12 @@ abstract contract WithMarketOffers is ERC721 {
         }
 
         require(msg.value >= offer.price, "Price not met");
-        seller.transfer(offer.price);
-        _safeTransfer(seller, msg.sender, tokenId, "");
 
+        // Seller gets msg value - fees set as BPS.
+        seller.transfer(msg.value - (offer.price * bps / 10000));
+
+        // We transfer the token.
+        _safeTransfer(seller, msg.sender, tokenId, "");
         emit Sale(tokenId, seller, msg.sender, offer.price);
         delete _offers[tokenId];
     }
@@ -74,6 +85,14 @@ abstract contract WithMarketOffers is ERC721 {
     modifier isForSale(uint256 tokenId) {
         require(_offers[tokenId].price > 0, "Item not for sale");
         _;
+    }
+
+    /// We support the `HasSecondarySalesFees` interface
+    function supportsInterface(bytes4 interfaceId)
+        public view virtual override(WithFees, ERC721)
+        returns (bool)
+    {
+        return WithFees.supportsInterface(interfaceId);
     }
 
 }
