@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
+import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/introspection/ERC165.sol";
 
@@ -9,7 +10,7 @@ import "./standards/HasSecondarySaleFees.sol";
 /// @author 1001.digital
 /// @title Implements the various fee standards that are floating around.
 /// @dev We need a proper standard for this.
-abstract contract WithFees is ERC721, HasSecondarySaleFees {
+abstract contract WithFees is ERC721, HasSecondarySaleFees, Ownable {
     // The address to pay fees to
     address payable internal beneficiary;
 
@@ -49,5 +50,11 @@ abstract contract WithFees is ERC721, HasSecondarySaleFees {
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, ERC165) returns (bool) {
         return interfaceId == type(HasSecondarySaleFees).interfaceId
             || ERC721.supportsInterface(interfaceId);
+    }
+
+    /// Exposes a way to update the secondary sale beneficiary
+    /// @param _beneficiary the new beneficiary
+    function setBeneficiary(address _beneficiary) public onlyOwner {
+        beneficiary = payable(_beneficiary);
     }
 }
