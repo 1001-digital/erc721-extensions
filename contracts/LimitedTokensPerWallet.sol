@@ -38,7 +38,7 @@ abstract contract LimitedTokensPerWallet is ERC721 {
         internal virtual override
         withinTokenLimit(to, 1)
     {
-        super._mint(to, tokenId);
+        super._safeMint(to, tokenId);
     }
 
     /// Only allow transfers if within the allowed token limit

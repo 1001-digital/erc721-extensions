@@ -49,7 +49,7 @@ abstract contract OnePerWallet is ERC721 {
     /// @param tokenId the tokenId that should be minted
     /// @dev overrides the OpenZeppelin `_mint` method to accomodate for our own balance tracker
     function _mint(address to, uint256 tokenId) internal virtual override onePerWallet(to) {
-        super._mint(to, tokenId);
+        super._safeMint(to, tokenId);
 
         // We add one to account for 0-index based collections
         _ownedToken[to] = tokenId + 1;
