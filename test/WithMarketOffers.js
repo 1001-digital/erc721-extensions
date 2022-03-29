@@ -94,7 +94,7 @@ describe('WithMarketOffers', async () => {
           .withArgs(1, seller.address, buyer.address, price)
           .to.emit(contract, 'Transfer')
           .withArgs(seller.address, buyer.address, 1)
-          .to.changeEtherBalance(seller, price, {
+          .to.changeEtherBalance(seller, ethers.utils.parseEther('1.8'), {
             provider: ethers.getDefaultProvider(),
           })
 

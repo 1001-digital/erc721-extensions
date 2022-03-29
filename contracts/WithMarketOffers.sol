@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-import "@1001-digital/erc721-extensions/contracts/WithFees.sol";
+import "./WithFees.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 /// @author 1001.digital
@@ -34,15 +34,6 @@ abstract contract WithMarketOffers is ERC721, WithFees {
         return _offers[tokenId];
     }
 
-    function _makeOffer(uint256 tokenId, uint256 price, address to) internal {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
-        require(price > 0, "Price should be higher than 0");
-        require(price > _offers[tokenId].price, "Price should be higher than existing offer");
-
-        _offers[tokenId] = Offer(price, payable(to));
-        emit OfferCreated(tokenId, price, to);
-    }
-
     /// @dev Make a new offer
     function makeOffer(uint256 tokenId, uint256 price) external {
         _makeOffer(tokenId, price, address(0));
@@ -51,12 +42,6 @@ abstract contract WithMarketOffers is ERC721, WithFees {
     /// @dev Make a new offer to a specific person
     function makeOfferTo(uint256 tokenId, uint256 price, address to) external {
         _makeOffer(tokenId, price, to);
-    }
-
-    /// @dev Revoke an active offer
-    function _cancelOffer(uint256 tokenId) private {
-        delete _offers[tokenId];
-        emit OfferWithdrawn(tokenId);
     }
 
     /// @dev Allow approved operators to cancel an offer
@@ -99,10 +84,26 @@ abstract contract WithMarketOffers is ERC721, WithFees {
         return WithFees.supportsInterface(interfaceId);
     }
 
+    /// @dev Make a new offer
+    function _makeOffer(uint256 tokenId, uint256 price, address to) internal {
+        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
+        require(price > 0, "Price should be higher than 0");
+        require(price > _offers[tokenId].price, "Price should be higher than existing offer");
+
+        _offers[tokenId] = Offer(price, payable(to));
+        emit OfferCreated(tokenId, price, to);
+    }
+
+    /// @dev Revoke an active offer
+    function _cancelOffer(uint256 tokenId) private {
+        delete _offers[tokenId];
+        emit OfferWithdrawn(tokenId);
+    }
+
+    /// @dev Clear active offers on transfers
     function _beforeTokenTransfer(address, address, uint256 tokenId) internal virtual override(ERC721) {
         if (_offers[tokenId].price > 0) {
             _cancelOffer(tokenId);
         }
     }
-
 }
