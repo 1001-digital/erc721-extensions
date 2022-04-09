@@ -25,7 +25,7 @@ abstract contract WithLimitedSupply {
 
     /// @dev Get the max Supply
     /// @return the maximum token count
-    function totalSupply() public view returns (uint256) {
+    function totalSupply() public view virtual returns (uint256) {
         return _totalSupply;
     }
 
