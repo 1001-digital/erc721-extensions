@@ -25,7 +25,7 @@ abstract contract WithFees is ERC721, HasSecondarySaleFees, Ownable {
         bps = _bps;
     }
 
-    /// Implement the `HasSecondarySalesFees` Contract
+    /// Implement the `HasSecondarySaleFees` Contract
     /// @dev implements the standard pushed by Rarible
     /// @return list of fee recipients, in our case always one
     function getFeeRecipients(uint256) public view override returns (address payable[] memory) {
@@ -34,7 +34,7 @@ abstract contract WithFees is ERC721, HasSecondarySaleFees, Ownable {
         return recipients;
     }
 
-    /// Implement the `HasSecondarySalesFees` Contract
+    /// Implement the `HasSecondarySaleFees` Contract
     /// @dev implements the standard pushed by Rarible
     /// @return list of fee basis points, in our case always one
     function getFeeBps(uint256) public view override returns (uint256[] memory) {
@@ -43,7 +43,7 @@ abstract contract WithFees is ERC721, HasSecondarySaleFees, Ownable {
         return bpsArray;
     }
 
-    /// Make sure the contract reports that it supportsthe `HasSecondarySalesFees` Interface
+    /// Make sure the contract reports that it supportsthe `HasSecondarySaleFees` Interface
     /// @param interfaceId the interface to check
     /// @dev extends the ERC721 method
     /// @return whether the given interface is supported
