@@ -13,6 +13,6 @@ abstract contract WithERC20Withdrawals is Ownable
     /// @dev only the owner can withdraw
     /// @param token contract to withdraw
     function withdrawERC20Token(address token) public onlyOwner {
-        IERC20(token).safeTransfer(msg.sender, balanceOf(address(this)));
+        IERC20(token).safeTransfer(msg.sender, IERC20(token).balanceOf(address(this)));
     }
 }
