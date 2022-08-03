@@ -34,23 +34,27 @@ abstract contract WithMarketOffers is ERC721, WithFees {
         return _offers[tokenId];
     }
 
-    /// @dev Make a new offer
+    /// @dev Make a new offer.
+    ///      Emits an {OfferCreated} event.
     function makeOffer(uint256 tokenId, uint256 price) external {
         _makeOffer(tokenId, price, address(0));
     }
 
-    /// @dev Make a new offer to a specific person
+    /// @dev Make a new offer to a specific person.
+    ///      Emits an {OfferCreated} event.
     function makeOfferTo(uint256 tokenId, uint256 price, address to) external {
         _makeOffer(tokenId, price, to);
     }
 
-    /// @dev Allow approved operators to cancel an offer
+    /// @dev Allow approved operators to cancel an offer.
+    ///      Emits an {OfferWithdrawn} event.
     function cancelOffer(uint256 tokenId) external {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
         _cancelOffer(tokenId);
     }
 
-    /// @dev Buy an item that is for offer
+    /// @dev Buy an item that is for offer.
+    ///      Emits a {Sale} event.
     function buy(uint256 tokenId) external payable isForSale(tokenId) {
         Offer memory offer = _offers[tokenId];
         address payable seller = payable(ownerOf(tokenId));
@@ -84,7 +88,8 @@ abstract contract WithMarketOffers is ERC721, WithFees {
         return WithFees.supportsInterface(interfaceId);
     }
 
-    /// @dev Make a new offer
+    /// @dev Make a new offer.
+    ///      Emits an {OfferCreated} event.
     function _makeOffer(uint256 tokenId, uint256 price, address to) internal {
         require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
         require(price > 0, "Price should be higher than 0");
@@ -94,13 +99,15 @@ abstract contract WithMarketOffers is ERC721, WithFees {
         emit OfferCreated(tokenId, price, to);
     }
 
-    /// @dev Revoke an active offer
+    /// @dev Revoke an active offer.
+    ///      Emits an {OfferWithdrawn} event.
     function _cancelOffer(uint256 tokenId) private {
         delete _offers[tokenId];
         emit OfferWithdrawn(tokenId);
     }
 
-    /// @dev Clear active offers on transfers
+    /// @dev Clear active offers on transfers.
+    ///      Emits an {OfferWithdrawn} event if an active offer exists.
     function _beforeTokenTransfer(address, address, uint256 tokenId) internal virtual override(ERC721) {
         if (_offers[tokenId].price > 0) {
             _cancelOffer(tokenId);
