@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -13,6 +14,8 @@ abstract contract WithERC20Withdrawals is Ownable
     /// @dev only the owner can withdraw
     /// @param token contract to withdraw
     function withdrawERC20Token(address token) public onlyOwner {
-        IERC20(token).safeTransfer(msg.sender, balanceOf(address(this)));
+        IERC20 tokenContract = IERC20(token);
+
+        tokenContract.safeTransfer(msg.sender, tokenContract.balanceOf(address(this)));
     }
 }
