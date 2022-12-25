@@ -71,10 +71,10 @@ contract RareToken is ERC721, WithLimitedSupply {
 
 The internal `nextToken()` method does not automatically check whether tokens are available but `WithLimitedSupply` provides the `ensureAvailability` modifier that you can attach to your minting function. If you implement minting multiple tokens within the same transaction, you should check availability with the `ensureAvailabilityFor(amount)` modifier.
 
-There are two Contracts that build on this: `LinearlyAssigned`, which adds the option of starting the token tracker from a specific number and `RandomlyAssigned`, wich enables semi random token ID assignments.
+There are two Contracts that build on this: `LinearlyAssigned`, which adds the option of starting the token tracker from a specific number and `RandomlyAssigned`, which enables semi random token ID assignments.
 
 #### `LinearlyAssigned.sol`
-Instanciate it with the max supply as well as the starting index:
+Instantiate it with the max supply as well as the starting index:
 
 ```solidity
 contract RareToken is ERC721, LinarlyAssigned {
