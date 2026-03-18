@@ -1,5 +1,11 @@
 # @1001-digital/erc721-extensions
 
+## 0.1.1
+
+### Patch Changes
+
+- [`dfc6353`](https://github.com/1001-digital/erc721-extensions/commit/dfc6353b2c845b5c89d02aeafbe0c58ddea0d3a2) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Improve natspec and examples
+
 ## 0.1.0
 
 ### Minor Changes
