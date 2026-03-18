@@ -8,15 +8,12 @@ importers:
 
   .:
     devDependencies:
-      '@1001-digital/check-address':
-        specifier: ^1.0.2
-        version: 1.0.2
       '@nomicfoundation/hardhat-toolbox-viem':
         specifier: ^5.0.2
         version: 5.0.3(2c94a9e57beb6d984d64b3f664f68ed9)
       '@openzeppelin/contracts':
-        specifier: ^4.9.6
-        version: 4.9.6
+        specifier: ^5.2.0
+        version: 5.6.1
       '@types/node':
         specifier: ^22.19.11
         version: 22.19.15
@@ -31,9 +28,6 @@ importers:
         version: 2.47.5(typescript@5.8.3)(zod@3.25.76)
 
 packages:
-
-  '@1001-digital/check-address@1.0.2':
-    resolution: {integrity: sha512-l5HyYSytHraOcL98NpIKv66STEFesGr1PuL4a+rcoacXVPXO8G4qx/jAtwrjP/TJhuQLXMAjIk0RZARkjjKQJA==}
 
   '@actions/core@1.11.1':
     resolution: {integrity: sha512-hXJCSrkwfA46Vd9Z3q4cpEpHB1rL5NG04+/rbqW9d3+CSvtB1tYe8UTpAlixa1vj0m/ULglfEK2UKxMGxCxv5A==}
@@ -467,8 +461,8 @@ packages:
     resolution: {integrity: sha512-q4n32/FNKIhQ3zQGGw5CvPF6GTvDCpYwIf7bEY/dZTZbgfDsHyjJwURxUJf3VQuuJj+fDIFl4+KkBVbw4Ef6jA==}
     engines: {node: '>= 12'}
 
-  '@openzeppelin/contracts@4.9.6':
-    resolution: {integrity: sha512-xSmezSupL+y9VkHZJGDoCBpmnB2ogM13ccaYDWqJTfS3dbuHkgjuwDFUmaFauBCboQMGB/S5UqUl2y54X99BmA==}
+  '@openzeppelin/contracts@5.6.1':
+    resolution: {integrity: sha512-Ly6SlsVJ3mj+b18W3R8gNufB7dTICT105fJhodGAGgyC2oqnBAhqSiNDJ8V8DLY05cCz81GLI0CU5vNYA1EC/w==}
 
   '@scure/base@1.1.9':
     resolution: {integrity: sha512-8YKhl8GHiNI/pU2VMaofa2Tor7PJRAjwQLBBuilkJ9L5+13yVbC7JO/wS7piioAvPSwR3JKM1IJ/u4xQzbcXKg==}
@@ -853,8 +847,6 @@ packages:
     resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
 
 snapshots:
-
-  '@1001-digital/check-address@1.0.2': {}
 
   '@actions/core@1.11.1':
     dependencies:
@@ -1341,7 +1333,7 @@ snapshots:
       '@nomicfoundation/solidity-analyzer-linux-x64-musl': 0.1.2
       '@nomicfoundation/solidity-analyzer-win32-x64-msvc': 0.1.2
 
-  '@openzeppelin/contracts@4.9.6': {}
+  '@openzeppelin/contracts@5.6.1': {}
 
   '@scure/base@1.1.9': {}
 

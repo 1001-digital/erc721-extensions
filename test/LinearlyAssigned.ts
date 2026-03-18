@@ -47,7 +47,7 @@ describe("LinearlyAssigned", async function () {
 
     await assert.rejects(
       contract.write.mint({ account: buyerWallet.account }),
-      /No more tokens available/,
+      /NoTokensAvailable/,
     );
   });
 
@@ -78,7 +78,7 @@ describe("LinearlyAssigned", async function () {
 
     await assert.rejects(
       contract.write.mintMany([21n], { account: buyerWallet.account }),
-      /Requested number of tokens not available/,
+      /RequestedTokensNotAvailable/,
     );
   });
 });

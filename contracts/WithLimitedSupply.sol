@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
-
-import "@openzeppelin/contracts/utils/Counters.sol";
+pragma solidity ^0.8.20;
 
 /// @author 1001.digital
 /// @title A token tracker that limits the token supply and increments token IDs on each new mint.
 abstract contract WithLimitedSupply {
-    using Counters for Counters.Counter;
+    error NoTokensAvailable();
+    error RequestedTokensNotAvailable();
+    error SupplyBelowCurrentCount();
 
     /// @dev Emitted when the supply of this collection changes
     event SupplyChanged(uint256 indexed supply);
 
     // Keeps track of how many we have minted
-    Counters.Counter private _tokenCount;
+    uint256 private _tokenCount;
 
     /// @dev The maximum count of tokens this token tracker will hold.
     uint256 private _totalSupply;
@@ -32,7 +32,7 @@ abstract contract WithLimitedSupply {
     /// @dev Get the current token count
     /// @return the created token count
     function tokenCount() public view returns (uint256) {
-        return _tokenCount.current();
+        return _tokenCount;
     }
 
     /// @dev Check whether tokens are still available
@@ -44,23 +44,23 @@ abstract contract WithLimitedSupply {
     /// @dev Increment the token count and fetch the latest count
     /// @return the next token id
     function nextToken() internal virtual returns (uint256) {
-        uint256 token = _tokenCount.current();
+        uint256 token = _tokenCount;
 
-        _tokenCount.increment();
+        ++_tokenCount;
 
         return token;
     }
 
     /// @dev Check whether another token is still available
     modifier ensureAvailability() {
-        require(availableTokenCount() > 0, "No more tokens available");
+        if (availableTokenCount() == 0) revert NoTokensAvailable();
         _;
     }
 
     /// @param amount Check whether number of tokens are still available
     /// @dev Check whether tokens are still available
     modifier ensureAvailabilityFor(uint256 amount) {
-        require(availableTokenCount() >= amount, "Requested number of tokens not available");
+        if (availableTokenCount() < amount) revert RequestedTokensNotAvailable();
         _;
     }
 
@@ -68,7 +68,7 @@ abstract contract WithLimitedSupply {
     /// @param _supply the new token supply.
     /// @dev create additional token supply for this collection.
     function _setSupply(uint256 _supply) internal virtual {
-        require(_supply > tokenCount(), "Can't set the supply to less than the current token count");
+        if (_supply <= tokenCount()) revert SupplyBelowCurrentCount();
         _totalSupply = _supply;
 
         emit SupplyChanged(totalSupply());

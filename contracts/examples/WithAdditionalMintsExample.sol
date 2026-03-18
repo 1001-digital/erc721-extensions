@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
@@ -13,6 +13,7 @@ contract WithAdditionalMintsExample is ERC721, LinearlyAssigned, WithAdditionalM
         string memory _cid
     )
         ERC721("LinearToken", "TT")
+        Ownable(msg.sender)
         LinearlyAssigned(amount, startFrom)
         WithIPFSMetaData(_cid)
     {}

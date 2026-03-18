@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
@@ -9,6 +9,8 @@ contract WithIPFSMetaDataExample is
     ERC721,
     WithIPFSMetaData
 {
+    error MaxSupplyReached();
+
     uint256 private _tokenId = 0;
     uint256 public MAX_SUPPLY = 100;
 
@@ -18,7 +20,7 @@ contract WithIPFSMetaDataExample is
     {}
 
     function mint () external {
-        require(_tokenId < MAX_SUPPLY, "All tokens have been minted");
+        if (_tokenId >= MAX_SUPPLY) revert MaxSupplyReached();
 
         _tokenId++;
         _safeMint(msg.sender, _tokenId);

@@ -47,7 +47,7 @@ describe("RandomlyAssigned", async function () {
 
     await assert.rejects(
       contract.write.mint([1n], { account: buyerWallet.account }),
-      /Requested number of tokens not available/,
+      /RequestedTokensNotAvailable/,
     );
   });
 
@@ -78,7 +78,7 @@ describe("RandomlyAssigned", async function () {
 
     await assert.rejects(
       contract.write.mint([21n], { account: buyerWallet.account }),
-      /Requested number of tokens not available/,
+      /RequestedTokensNotAvailable/,
     );
   });
 });

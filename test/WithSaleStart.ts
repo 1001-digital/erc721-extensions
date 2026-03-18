@@ -51,7 +51,7 @@ describe("WithSaleStart", async function () {
 
       await assert.rejects(
         contract.write.setSaleStart([saleStart + TWO_MINUTES]),
-        /Sale has already started/,
+        /SaleAlreadyStarted/,
       );
     });
 
@@ -60,7 +60,7 @@ describe("WithSaleStart", async function () {
 
       await assert.rejects(
         contract.write.mint({ account: buyerWallet.account }),
-        /Sale hasn't started yet/,
+        /SaleNotStarted/,
       );
     });
 

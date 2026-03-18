@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @author 1001.digital
 /// @title Enables to sell tokens at default and custom prices.
-contract WithTokenPrices is Ownable {
+abstract contract WithTokenPrices is Ownable {
+    error InsufficientPayment();
+
     // The default price for the tokens
     uint256 public defaultPrice;
 
@@ -40,7 +42,7 @@ contract WithTokenPrices is Ownable {
         uint256 tokenPrice = priceForToken[_tokenId] > 0
             ? priceForToken[_tokenId]
             : defaultPrice;
-        require(msg.value >= tokenPrice, "Pay up, friend");
+        if (msg.value < tokenPrice) revert InsufficientPayment();
 
         _;
     }

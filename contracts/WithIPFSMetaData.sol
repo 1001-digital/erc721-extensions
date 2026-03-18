@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
@@ -8,6 +8,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 /// @title Handle NFT Metadata stored on IPFS
 abstract contract WithIPFSMetaData is ERC721 {
     using Strings for uint256;
+
+    error TokenDoesNotExist();
 
     /// @dev Emitted when the content identifyer changes
     event MetadataURIChanged(string indexed baseURI);
@@ -27,7 +29,7 @@ abstract contract WithIPFSMetaData is ERC721 {
     /// @dev links to the metadata json file on IPFS.
     /// @return the URL to the token metadata file
     function tokenURI(uint256 tokenId) public view virtual override returns (string memory) {
-        require(_exists(tokenId), "ERC721Metadata: URI query for nonexistent token");
+        if (_ownerOf(tokenId) == address(0)) revert TokenDoesNotExist();
 
         // We don't check whether the _baseURI is set like in the OpenZeppelin implementation
         // as we're deploying the contract with the CID.

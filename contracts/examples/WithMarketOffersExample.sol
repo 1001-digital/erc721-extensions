@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "./../WithMarketOffers.sol";
 
@@ -8,6 +8,7 @@ contract WithMarketOffersExample is WithMarketOffers {
 
     constructor()
         ERC721("Token", "T")
+        Ownable(msg.sender)
         WithMarketOffers(payable(msg.sender), 1000)
     {}
 

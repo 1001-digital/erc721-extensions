@@ -23,7 +23,7 @@ describe("WithMarketOffers", async function () {
 
       await assert.rejects(
         contract.read.offerFor([1n]),
-        /No active offer for this item/,
+        /NoActiveOffer/,
       );
 
       await viem.assertions.emitWithArgs(
@@ -75,7 +75,7 @@ describe("WithMarketOffers", async function () {
 
       await assert.rejects(
         contract.write.buy([1n], { value: price, account: otherBuyer.account }),
-        /Can't buy a privately offered item/,
+        /PrivateOffer/,
       );
 
       assert.equal(
@@ -91,7 +91,7 @@ describe("WithMarketOffers", async function () {
 
       await assert.rejects(
         contract.read.offerFor([1n]),
-        /No active offer for this item/,
+        /NoActiveOffer/,
       );
 
       await viem.assertions.emitWithArgs(
@@ -111,7 +111,7 @@ describe("WithMarketOffers", async function () {
 
       await assert.rejects(
         contract.write.makeOffer([1n, price], { account: buyerWallet.account }),
-        /Caller is neither owner nor approved/,
+        /NotApprovedOrOwner/,
       );
     });
 
@@ -164,7 +164,7 @@ describe("WithMarketOffers", async function () {
 
       await assert.rejects(
         contract.write.buy([1n], { value: price - 1n, account: buyerWallet.account }),
-        /Price not met/,
+        /PriceNotMet/,
       );
     });
 
@@ -173,7 +173,7 @@ describe("WithMarketOffers", async function () {
 
       await assert.rejects(
         contract.write.buy([1n], { value: price, account: buyerWallet.account }),
-        /Item not for sale/,
+        /ItemNotForSale/,
       );
     });
 
@@ -191,7 +191,7 @@ describe("WithMarketOffers", async function () {
 
       await assert.rejects(
         contract.read.offerFor([1n]),
-        /No active offer for this item/,
+        /NoActiveOffer/,
       );
     });
   });

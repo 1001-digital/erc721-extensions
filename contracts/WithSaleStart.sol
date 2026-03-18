@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -7,6 +7,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title An extension that enables the contract owner to set and update the date of a public sale.
 abstract contract WithSaleStart is Ownable
 {
+    error SaleNotStarted();
+    error SaleAlreadyStarted();
+
     // Stores the sale start time
     uint256 private _saleStart;
 
@@ -36,13 +39,13 @@ abstract contract WithSaleStart is Ownable
 
     /// @dev Modifier to make a function callable only after sale start
     modifier afterSaleStart() {
-        require(saleStarted(), "Sale hasn't started yet");
+        if (!saleStarted()) revert SaleNotStarted();
         _;
     }
 
     /// @dev Modifier to make a function callable only before sale start
     modifier beforeSaleStart() {
-        require(! saleStarted(), "Sale has already started");
+        if (saleStarted()) revert SaleAlreadyStarted();
         _;
     }
 }

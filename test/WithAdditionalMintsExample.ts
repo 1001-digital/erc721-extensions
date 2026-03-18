@@ -37,7 +37,7 @@ describe("WithAdditionalMints", async function () {
 
     await assert.rejects(
       contract.write.mint({ account: buyerWallet.account }),
-      /No more tokens available/,
+      /NoTokensAvailable/,
     );
   });
 
@@ -62,7 +62,7 @@ describe("WithAdditionalMints", async function () {
       // Verify no more available after minting the added token
       await assert.rejects(
         contract.write.mint({ account: buyerWallet.account }),
-        /No more tokens available/,
+        /NoTokensAvailable/,
       );
     });
 
@@ -79,7 +79,7 @@ describe("WithAdditionalMints", async function () {
       // Verify no more available
       await assert.rejects(
         contract.write.mint({ account: buyerWallet.account }),
-        /No more tokens available/,
+        /NoTokensAvailable/,
       );
     });
 
@@ -101,7 +101,7 @@ describe("WithAdditionalMints", async function () {
       // Verify no more available
       await assert.rejects(
         contract.write.mint({ account: buyerWallet.account }),
-        /No more tokens available/,
+        /NoTokensAvailable/,
       );
     });
   });

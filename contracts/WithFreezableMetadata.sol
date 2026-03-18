@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 /// @author 1001.digital
 /// @title A small helper to handle freezing of metadata
-contract WithFreezableMetadata is Ownable {
+abstract contract WithFreezableMetadata is Ownable {
+    error MetadataFrozen();
+
     // Whether metadata is frozen
     bool public frozen;
 
@@ -16,7 +18,7 @@ contract WithFreezableMetadata is Ownable {
 
     /// @dev Whether metadata is unfrozen
     modifier unfrozen() {
-        require(! frozen, "Metadata already frozen");
+        if (frozen) revert MetadataFrozen();
 
         _;
     }

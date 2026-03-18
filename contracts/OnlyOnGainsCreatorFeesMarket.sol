@@ -1,12 +1,22 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "./WithFees.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
 /// @author 1001.digital
 /// @title Implement an integrated marketplace that pays creator-fees on secondary trading gains
-abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees {
+abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees, ReentrancyGuard {
+
+    error NoActiveOffer();
+    error PrivateOffer();
+    error NotApprovedOrOwner();
+    error PriceNotMet();
+    error ItemNotForSale();
+    error PriceMustBePositive();
+    error PriceMustBeHigher();
+    error TransferFailed();
 
     event OfferCreated(uint256 indexed tokenId, uint256 indexed value, address indexed to);
     event OfferWithdrawn(uint256 indexed tokenId);
@@ -24,13 +34,13 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees {
     /// Instantiate the contract
     /// @param _feeRecipient the fee recipient for secondary sales
     /// @param _bps the basis points measure for the fees
-    constructor (address payable _feeRecipient, uint256 _bps)
+    constructor (address payable _feeRecipient, uint96 _bps)
         WithFees(_feeRecipient, _bps)
     {}
 
     /// @dev All active offers
     function offerFor(uint256 tokenId) external view returns(Offer memory) {
-        require(_offers[tokenId].price > 0, "No active offer for this item");
+        if (_offers[tokenId].price == 0) revert NoActiveOffer();
 
         return _offers[tokenId];
     }
@@ -50,48 +60,59 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees {
     /// @dev Allow approved operators to cancel an offer.
     ///      Emits an {OfferWithdrawn} event.
     function cancelOffer(uint256 tokenId) external {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
+        address owner = _requireOwned(tokenId);
+        if (!_isAuthorized(owner, _msgSender(), tokenId)) revert NotApprovedOrOwner();
         _cancelOffer(tokenId);
     }
 
     /// @dev Buy an item that is for offer.
     ///      Emits a {Sale} event.
-    function buy(uint256 tokenId) external payable isForSale(tokenId) {
+    function buy(uint256 tokenId) external payable nonReentrant isForSale(tokenId) {
         Offer memory offer = _offers[tokenId];
         address payable seller = payable(ownerOf(tokenId));
 
         // If it is a private sale, make sure the buyer is the private sale recipient.
         if (offer.specificBuyer != address(0)) {
-            require(offer.specificBuyer == msg.sender, "Can't buy a privately offered item");
+            if (offer.specificBuyer != msg.sender) revert PrivateOffer();
         }
 
-        require(msg.value >= offer.price, "Price not met");
+        if (msg.value < offer.price) revert PriceNotMet();
 
-        // Seller gets msg value - fees set as BPS.
-        if (offer.lastPrice < offer.price) {
-            uint128 gains = offer.price - offer.lastPrice;
-            uint256 creatorFees = gains * bps / 10000;
-            seller.transfer(msg.value - creatorFees);
-            beneficiary.transfer(creatorFees);
+        // Keep track of the last price of the token before transfer clears the offer.
+        uint128 lastPrice = offer.lastPrice;
+        uint128 salePrice = offer.price;
+
+        // Update lastPrice in storage before transfer
+        _offers[tokenId].lastPrice = salePrice;
+
+        // CEI: Transfer token first (clears offer price via _update, but lastPrice is preserved)
+        _safeTransfer(seller, msg.sender, tokenId);
+
+        // Seller gets msg value - fees set as BPS (only on gains).
+        if (lastPrice < salePrice) {
+            uint128 gains = salePrice - lastPrice;
+            uint256 creatorFees = uint256(gains) * bps / 10000;
+
+            (bool sellerSuccess, ) = seller.call{value: msg.value - creatorFees}("");
+            if (!sellerSuccess) revert TransferFailed();
+
+            (bool feeSuccess, ) = beneficiary.call{value: creatorFees}("");
+            if (!feeSuccess) revert TransferFailed();
         } else {
-            seller.transfer(msg.value);
+            (bool success, ) = seller.call{value: msg.value}("");
+            if (!success) revert TransferFailed();
         }
 
-        // Keep traack of the last price of the token.
-        offer.lastPrice = offer.price;
-
-        // We transfer the token.
-        _safeTransfer(seller, msg.sender, tokenId, "");
-        emit Sale(tokenId, seller, msg.sender, offer.price);
+        emit Sale(tokenId, seller, msg.sender, salePrice);
     }
 
     /// @dev Check whether the token is for sale
     modifier isForSale(uint256 tokenId) {
-        require(_offers[tokenId].price > 0, "Item not for sale");
+        if (_offers[tokenId].price == 0) revert ItemNotForSale();
         _;
     }
 
-    /// We support the `HasSecondarySalesFees` interface
+    /// We support ERC721 and ERC2981
     function supportsInterface(bytes4 interfaceId)
         public view virtual override(WithFees, ERC721)
         returns (bool)
@@ -102,9 +123,10 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees {
     /// @dev Make a new offer.
     ///      Emits an {OfferCreated} event.
     function _makeOffer(uint256 tokenId, uint128 price, address to) internal {
-        require(_isApprovedOrOwner(_msgSender(), tokenId), "Caller is neither owner nor approved");
-        require(price > 0, "Price should be higher than 0");
-        require(price > _offers[tokenId].price, "Price should be higher than existing offer");
+        address owner = _requireOwned(tokenId);
+        if (!_isAuthorized(owner, _msgSender(), tokenId)) revert NotApprovedOrOwner();
+        if (price == 0) revert PriceMustBePositive();
+        if (price <= _offers[tokenId].price) revert PriceMustBeHigher();
 
         _offers[tokenId] = Offer(price, _offers[tokenId].lastPrice, payable(to));
         emit OfferCreated(tokenId, price, to);
@@ -120,9 +142,11 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees {
 
     /// @dev Clear active offers on transfers.
     ///      Emits an {OfferWithdrawn} event if an active offer exists.
-    function _beforeTokenTransfer(address, address, uint256 tokenId, uint256) internal virtual override(ERC721) {
+    function _update(address to, uint256 tokenId, address auth) internal virtual override(ERC721) returns (address) {
+        address from = super._update(to, tokenId, auth);
         if (_offers[tokenId].price > 0) {
             _cancelOffer(tokenId);
         }
+        return from;
     }
 }
