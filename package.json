@@ -2,10 +2,10 @@
   "name": "@1001-digital/erc721-extensions",
   "version": "0.0.19",
   "description": "Composable smart contract extensions for the OpenZeppelin base contracts",
+  "type": "module",
   "scripts": {
     "test": "hardhat test",
-    "node": "hardhat node",
-    "deploy:localhost": "hardhat run scripts/deploy.js --network localhost"
+    "typecheck": "tsc --noEmit"
   },
   "repository": {
     "type": "git",
@@ -28,15 +28,14 @@
     "@1001-digital/check-address": "^1.0.2",
     "@openzeppelin/contracts": "^4.2.0"
   },
+  "packageManager": "pnpm@10.30.0",
   "devDependencies": {
-    "@nomiclabs/hardhat-ethers": "^2.0.2",
-    "@nomiclabs/hardhat-etherscan": "^2.1.4",
-    "@nomiclabs/hardhat-waffle": "^2.0.1",
-    "chai": "^4.3.4",
-    "dotenv": "^10.0.0",
-    "ethereum-waffle": "^3.4.0",
-    "ethers": "^5.4.4",
-    "hardhat": "^2.6.0",
-    "hardhat-gas-reporter": "^1.0.4"
+    "@1001-digital/check-address": "^1.0.2",
+    "@nomicfoundation/hardhat-toolbox-viem": "^5.0.2",
+    "@openzeppelin/contracts": "^4.9.6",
+    "@types/node": "^22.19.11",
+    "hardhat": "^3.1.7",
+    "typescript": "~5.8.3",
+    "viem": "^2.45.3"
   }
 }

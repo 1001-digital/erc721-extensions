@@ -108,7 +108,7 @@ abstract contract WithMarketOffers is ERC721, WithFees {
 
     /// @dev Clear active offers on transfers.
     ///      Emits an {OfferWithdrawn} event if an active offer exists.
-    function _beforeTokenTransfer(address, address, uint256 tokenId) internal virtual override(ERC721) {
+    function _beforeTokenTransfer(address, address, uint256 tokenId, uint256) internal virtual override(ERC721) {
         if (_offers[tokenId].price > 0) {
             _cancelOffer(tokenId);
         }
