@@ -1,53 +1,22 @@
 # ERC721 Contract Extensions
 A set of composable extensions for the [OpenZeppelin](https://openzeppelin.com/) ERC721 base contracts.
 
+> **v0.1.0 Breaking Change**: This version targets OpenZeppelin 5.x and Solidity ^0.8.20. It is not backward compatible with OZ 4.x consumers. All `require` strings have been replaced with custom errors, `Counters` has been removed, and `_mint`/`_transfer` overrides have been replaced with the OZ 5.x `_update` hook.
+
+## Installation
+```bash
+pnpm install @1001-digital/erc721-extensions
+```
+
+Then import the extensions you want:
+```solidity
+import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";
+```
+
+### Peer dependency
+This package requires `@openzeppelin/contracts ^5.2.0` as a peer dependency.
+
 ## Available Extensions
-### `WithContractMetaData.sol`
-Link to your collection's contract meta data right from within your smart contract.
-
-Builds on `Ownable` and allows the contract owner to change contract metadata even after deployment.
-
-Make sure the URL links to an appropriate JSON file.
-
-```solidity
-contract Token is ERC721, WithContractMetadata {
-  constructor()
-    ERC721("Token", "LT")
-    WithContractMetadata("ipfs://0123456789123456789123456789123456789123456789/metadata.json")
-  {}
-}
-```
-
-To change the contract metadat URI, call `setContractURI(string uri)` as the contract owner.
-
-### `WithIPFSMetaData.sol`
-Handles linking to metadata files hosted on IPFS and follows best practices doing so:
-
-- Projects have to embed the Content ID hash in the contract right from the start
-- Project owners can never change the CID
-- Tokens link to an `ipfs://`-URL to be independent of particular IPFS Gateways.
-- Tokens wrap a folder with a `metadata.json` file (and pot. all the assets of the token).
-
-> **Note**: You should never publish metadata before public sale is complete.<br> <small>This is to prevent people from trying to snipe rare tokens (rarity can be derived from going through all metadata files and looking at the trait and attribute distributions). Although very expensive (in gas fees) to do so, it is potentially possible and thus bad practice.</small>
-
-```solidity
-contract CleanToken is ERC721, WithIPFSMetaData {
-  constructor()
-    ERC721("CleanToken", "CT")
-    WithIPFSMetaData("0123456789123456789123456789123456789123456789")
-  {}
-}
-```
-
-#### `WithIPFSMetadataAndPreviewMetadata.sol`
-*TODO*
-
-### `WithTransferTimeLock.sol`
-To prevent an attack vector right after public sale of tokens, this extension adds a timelock to transfers for 12 hours after initial sale. This gives all buyers enough time to familiarise themselves with their tokens and the entire collection, as well as the rarities of items.
-
-Alternatively: Publish the entire collection without tokenIDs from the get go / or at least all rarity statistics.
-
-*TODO*
 
 ### `WithLimitedSupply.sol`
 A simple token tracker that limits the token supply.
@@ -62,31 +31,29 @@ contract RareToken is ERC721, WithLimitedSupply {
   {}
 
   function mint () external ensureAvailability() {
-    uint256 newTokenId = nextToken(); // Create a new token ID
-
-    // ...
+    uint256 newTokenId = nextToken();
+    _safeMint(msg.sender, newTokenId);
   }
 }
 ```
 
 The internal `nextToken()` method does not automatically check whether tokens are available but `WithLimitedSupply` provides the `ensureAvailability` modifier that you can attach to your minting function. If you implement minting multiple tokens within the same transaction, you should check availability with the `ensureAvailabilityFor(amount)` modifier.
 
-There are two Contracts that build on this: `LinearlyAssigned`, which adds the option of starting the token tracker from a specific number and `RandomlyAssigned`, which enables semi random token ID assignments.
+There are two contracts that build on this: `LinearlyAssigned`, which adds the option of starting the token tracker from a specific number, and `RandomlyAssigned`, which enables semi random token ID assignments.
 
 #### `LinearlyAssigned.sol`
 Instantiate it with the max supply as well as the starting index:
 
 ```solidity
-contract RareToken is ERC721, LinarlyAssigned {
+contract RareToken is ERC721, LinearlyAssigned {
   constructor()
     ERC721("RareToken", "RT")
-    LinarlyAssigned(1000, 1) // Max. 1k NFTs available; Start counting from 1 (instead of 0)
+    LinearlyAssigned(1000, 1) // Max. 1k NFTs; Start from 1
   {}
 
   function mint () external ensureAvailability() {
-    uint256 newTokenId = nextToken(); // Create a new token ID
-
-    // ...
+    uint256 newTokenId = nextToken();
+    _safeMint(msg.sender, newTokenId);
   }
 }
 ```
@@ -98,31 +65,28 @@ contract RareToken is ERC721, LinarlyAssigned {
 contract RandomToken is ERC721, RandomlyAssigned {
   constructor()
     ERC721("RandomToken", "RT")
-    RandomlyAssigned(1000, 1) // Max. 1k NFTs available; Start counting from 1 (instead of 0)
+    RandomlyAssigned(1000, 1) // Max. 1k NFTs; Start from 1
   {}
 
   function mint () external ensureAvailability() {
-    uint256 newTokenId = nextToken(); // Create a new random token ID
-
-    // ...
+    uint256 newTokenId = nextToken();
+    _safeMint(msg.sender, newTokenId);
   }
 }
 ```
 
-> *) We can't create proper random numbers on chain. But this does the job well enough, if you hide your metadata during public sale and are not too valuable of an NFT project (pot. exploit costs a lot of gas, thus making it economically unfeasible to do for profit for 'normal' NFT collections). If you want true random assignment, check out [Chainlink](https://chain.link/).
+> *) On-chain randomness uses `block.prevrandao` which is not truly random. This is adequate for most NFT collections, but if you need cryptographically secure randomness, use [Chainlink VRF](https://chain.link/).
 
 ### `WithSaleStart.sol`
-An extension that enables the contract owner to set and update the date of a public sale.
+Enables the contract owner to set and update the date of a public sale.
 
-This builds upon the `Ownable` extension, so only contract deployers can change the sale start via `setSaleStart(uint256 time)`.
-Also, to stay true to the trustless spirit of NFTs, it is not possible to change the sale start after the initial sale started.
-
-To use this in your project, call the `afterSaleStart` / `beforeSaleStart` modifiers.
+Builds on `Ownable` — only the contract owner can change the sale start via `setSaleStart(uint256 time)`. The sale start cannot be changed after the initial sale has started.
 
 ```solidity
 contract MyToken is ERC721, WithSaleStart {
   constructor()
     ERC721("MyToken", "MT")
+    Ownable(msg.sender)
     WithSaleStart(1735686000)
   {}
 
@@ -132,26 +96,8 @@ contract MyToken is ERC721, WithSaleStart {
 }
 ```
 
-### `LimitedTokensPerWallet.sol`
-Limits the amount of tokens a receiving address can hold.
-
-> This is enforced on every recipient address, including smart contracts such as Safes, marketplaces, staking contracts, and vaults. It is not limited to EOAs.
-
-```solidity
-contract LimitedToken is ERC721, LimitedTokensPerWallet {
-  constructor()
-    ERC721("LimitedToken", "LT")
-    LimitedTokensPerWallet(3) // Only allow three tokens per wallet
-  {}
-
-  // Mint & Transfer limits are taken care of by the library.
-}
-```
-
 ### `OnePerWallet.sol`
-A more extreme version of `LimitedTokensPerWallet`, which only allows holding one token in a receiving address.
-
-To use this in your project just extend the contract.
+Restricts every address to holding at most one token. Enforced on all recipient addresses (EOAs and contracts alike) via the `_update` hook.
 
 ```solidity
 contract OneForAllToken is ERC721, OnePerWallet {
@@ -159,29 +105,75 @@ contract OneForAllToken is ERC721, OnePerWallet {
     ERC721("OneForAllToken", "OFA")
   {}
 
-  // Mints and Transfer limites are taken care of by the library.
+  function _update(address to, uint256 tokenId, address auth)
+    internal override(ERC721, OnePerWallet) returns (address)
+  {
+    return OnePerWallet._update(to, tokenId, auth);
+  }
 }
 ```
 
-> This restriction is enforced on all recipient addresses, including smart contracts. There is no separate `onePerWallet` or `onePerAccount` modifier in this package.
+### `LimitedTokensPerWallet.sol`
+Limits the number of tokens any single address can hold. Enforced on every recipient address, including smart contracts such as Safes, marketplaces, staking contracts, and vaults.
 
-### `WithMarketOffers.sol`
-Implements a simple offer based marketplace. Owners of tokens can choose to sell them via the in-built market.
+```solidity
+contract LimitedToken is ERC721, LimitedTokensPerWallet {
+  constructor()
+    ERC721("LimitedToken", "LT")
+    LimitedTokensPerWallet(3) // Max 3 tokens per wallet
+  {}
 
-Just extend the `WithMarketOffers.sol` contract to make this work.
+  function _update(address to, uint256 tokenId, address auth)
+    internal override(ERC721, LimitedTokensPerWallet) returns (address)
+  {
+    return LimitedTokensPerWallet._update(to, tokenId, auth);
+  }
+}
+```
 
-> Offers remain active until they are canceled or the token moves. Revoking an operator approval does not automatically clear an already-created offer, because sale execution is handled internally by the token contract.
+### `WithContractMetaData.sol`
+Link to your collection's contract metadata right from within your smart contract.
+
+Builds on `Ownable` and allows the contract owner to change contract metadata even after deployment.
+
+```solidity
+contract Token is ERC721, WithContractMetaData {
+  constructor()
+    ERC721("Token", "T")
+    Ownable(msg.sender)
+    WithContractMetaData("ipfs://Qm.../metadata.json")
+  {}
+}
+```
+
+### `WithIPFSMetaData.sol`
+Handles linking to metadata files hosted on IPFS:
+
+- Projects embed the Content ID hash in the contract from deployment
+- Tokens link to an `ipfs://` URL to be independent of particular IPFS gateways
+- Tokens wrap a folder with a `metadata.json` file (and potentially all the assets of the token)
+
+> **Note**: You should never publish metadata before public sale is complete. This prevents people from sniping rare tokens by analyzing trait distributions across metadata files.
+
+```solidity
+contract CleanToken is ERC721, WithIPFSMetaData {
+  constructor()
+    ERC721("CleanToken", "CT")
+    WithIPFSMetaData("Qm0123456789...")
+  {}
+}
+```
 
 ### `WithFees.sol`
-Aims to abstracts out the complexity of current fee standards.
+Implements the [ERC-2981](https://eips.ethereum.org/EIPS/eip-2981) royalty standard. Marketplaces that support ERC-2981 will automatically query `royaltyInfo()` to determine fee recipients and amounts.
 
 ```solidity
 contract SharedUpsideToken is ERC721, WithFees {
   constructor()
     ERC721("SharedUpsideToken", "SUP")
-    // 500 Basis Points (5%) of secondary sales 
-    // should go to the given beneficiary address
-    WithFees(0xe11Da9560b51f8918295edC5ab9c0a90E9ADa20B, 500)
+    Ownable(msg.sender)
+    // 500 basis points (5%) to the given beneficiary
+    WithFees(payable(0xe11Da9560b51f8918295edC5ab9c0a90E9ADa20B), 500)
   {}
 
   function supportsInterface(bytes4 interfaceId) public view override(WithFees, ERC721) returns (bool) {
@@ -190,23 +182,42 @@ contract SharedUpsideToken is ERC721, WithFees {
 }
 ```
 
+The owner can update royalty info via `setRoyaltyInfo(address, uint96)`.
+
+### `WithMarketOffers.sol`
+Implements a simple offer-based marketplace. Owners of tokens can sell them via the built-in market.
+
+Includes `ReentrancyGuard`, follows the checks-effects-interactions pattern, and sends fees directly to the beneficiary on each sale.
+
+> Offers remain active until they are canceled or the token moves. Revoking an operator approval does not automatically clear an already-created offer, because sale execution is handled internally by the token contract.
+
+### `OnlyOnGainsCreatorFeesMarket.sol`
+A variant of `WithMarketOffers` that only charges creator fees on price appreciation. If a token sells at or below its last sale price, no fee is taken.
+
+### `WithFreezableMetadata.sol`
+A helper for irreversibly freezing metadata. Once `freeze()` is called by the owner, any function guarded by the `unfrozen` modifier will revert.
+
+### `WithTokenPrices.sol`
+Enables selling tokens at default and custom prices. Use the `meetsPrice(tokenId)` modifier on your mint/purchase function.
+
 ### `WithWithdrawals.sol`
-A simple helper that implements a withdrawal function.
+A simple helper that lets the contract owner withdraw ETH from the contract via `withdraw()`. Uses `.call{value:}()` instead of `.transfer()` for gas-safety.
 
-Just call `withdraw` as the contract owner.
+### `WithERC20Withdrawals.sol`
+Lets the contract owner recover ERC20 tokens accidentally sent to the contract.
 
-## Installation
-1. In your project run `npm install @1001-digital/erc721-extensions`
-2. Within your project, import the extensions you want to use like `import "@1001-digital/erc721-extensions/contracts/WithIPFSMetaData.sol";`
+### `WithAdditionalMints.sol`
+Enables the contract owner to expand a collection after the initial supply is minted, by adding new tokens and updating the metadata CID.
 
 ## Local Development
-This project uses the [Hardhat](https://hardhat.org/) development environment. To set it up locally, clone this repository and run `npm install`.
+This project uses [Hardhat](https://hardhat.org/) and [pnpm](https://pnpm.io/).
 
-Note: You can exchange `npm run` for `hh` if you have `hh` installed globally on your system.
-
-- Run the test suite: `npm run test`
-- Spin up a local development blockchain: `npm run node`
-<!-- - Deploy contract with `npm run deploy:localhost` -->
+```bash
+pnpm install
+pnpm hardhat compile
+pnpm hardhat test
+pnpm typecheck
+```
 
 ## Thank You
-If you have any **improvement suggestions**, **feedback** or **bug reports** please feel free add an issue, or reach out via Twitter [@jwahdatehagh](https://twitter.com/jwahdatehagh) or Email [jalil@1001.digital](jalil@1001.digital).
+If you have any **improvement suggestions**, **feedback** or **bug reports** please feel free add an issue, or reach out via Twitter [@jwahdatehagh](https://twitter.com/jwahdatehagh) or Email [jalil@1001.digital](mailto:jalil@1001.digital).
