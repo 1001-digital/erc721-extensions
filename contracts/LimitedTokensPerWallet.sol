@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /// @author 1001.digital
 /// @title An extension that enables checking that an address only holds a limited amount of tokens.
 abstract contract LimitedTokensPerWallet is ERC721 {
+    /// @dev Thrown when a mint or transfer would exceed the per-wallet token limit.
     error AboveAllowedTokenCount();
 
     // Stores how many tokens are allowed per wallet.

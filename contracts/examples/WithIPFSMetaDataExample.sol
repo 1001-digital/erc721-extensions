@@ -9,6 +9,7 @@ contract WithIPFSMetaDataExample is
     ERC721,
     WithIPFSMetaData
 {
+    /// @dev Thrown when all tokens have been minted.
     error MaxSupplyReached();
 
     uint256 private _tokenId = 0;

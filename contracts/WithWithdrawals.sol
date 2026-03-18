@@ -7,6 +7,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title An extension that enables the contract owner to withdraw funds stored in the contract.
 abstract contract WithWithdrawals is Ownable
 {
+    /// @dev Thrown when the ETH transfer to the owner fails.
     error TransferFailed();
 
     /// Withdraws the ETH stored in the contract.

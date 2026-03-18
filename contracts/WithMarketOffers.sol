@@ -9,18 +9,30 @@ import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 /// @title Implement a basic integrated marketplace with fees
 abstract contract WithMarketOffers is ERC721, WithFees, ReentrancyGuard {
 
+    /// @dev Thrown when querying an offer that does not exist.
     error NoActiveOffer();
+    /// @dev Thrown when a non-designated buyer attempts to purchase a private offer.
     error PrivateOffer();
+    /// @dev Thrown when the caller is not the token owner or an approved operator.
     error NotApprovedOrOwner();
+    /// @dev Thrown when msg.value is less than the offer price.
     error PriceNotMet();
+    /// @dev Thrown when msg.value does not exactly match the offer price.
     error ExactPriceRequired();
+    /// @dev Thrown when attempting to buy a token with no active offer.
     error ItemNotForSale();
+    /// @dev Thrown when creating an offer with a zero price.
     error PriceMustBePositive();
+    /// @dev Thrown when creating an offer at or below the current offer price.
     error PriceMustBeHigher();
+    /// @dev Thrown when an ETH transfer to the seller or beneficiary fails.
     error TransferFailed();
 
+    /// @dev Emitted when a new offer is created for a token.
     event OfferCreated(uint256 indexed tokenId, uint256 indexed value, address indexed to);
+    /// @dev Emitted when an offer is explicitly cancelled by the owner.
     event OfferWithdrawn(uint256 indexed tokenId);
+    /// @dev Emitted when a token is sold through the marketplace.
     event Sale(uint256 indexed tokenId, address indexed from, address indexed to, uint256 value);
 
     struct Offer {

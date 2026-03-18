@@ -4,8 +4,11 @@ pragma solidity ^0.8.20;
 /// @author 1001.digital
 /// @title A token tracker that limits the token supply and increments token IDs on each new mint.
 abstract contract WithLimitedSupply {
+    /// @dev Thrown when no tokens remain to be minted.
     error NoTokensAvailable();
+    /// @dev Thrown when the requested mint amount exceeds available supply.
     error RequestedTokensNotAvailable();
+    /// @dev Thrown when attempting to set supply below the current token count.
     error SupplyBelowCurrentCount();
 
     /// @dev Emitted when the supply of this collection changes

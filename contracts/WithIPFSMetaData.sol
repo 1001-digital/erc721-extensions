@@ -9,6 +9,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 abstract contract WithIPFSMetaData is ERC721 {
     using Strings for uint256;
 
+    /// @dev Thrown when querying metadata for a token that has not been minted.
     error TokenDoesNotExist();
 
     /// @dev Emitted when the content identifyer changes

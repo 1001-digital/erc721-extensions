@@ -6,7 +6,9 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 /// @author 1001.digital
 /// @title An extension that enables checking that an address only holds one token.
 abstract contract OnePerWallet is ERC721 {
+    /// @dev Thrown when a mint or transfer would give an address more than one token.
     error OneTokenPerWallet();
+    /// @dev Thrown when querying the token of an address that holds none.
     error NoTokenForAccount();
 
     // Mapping owner address to token

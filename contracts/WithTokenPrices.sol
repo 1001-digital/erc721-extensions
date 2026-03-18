@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @author 1001.digital
 /// @title Enables to sell tokens at default and custom prices.
 abstract contract WithTokenPrices is Ownable {
+    /// @dev Thrown when msg.value is less than the token's price.
     error InsufficientPayment();
 
     // The default price for the tokens

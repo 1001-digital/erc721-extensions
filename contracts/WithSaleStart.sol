@@ -7,7 +7,9 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title An extension that enables the contract owner to set and update the date of a public sale.
 abstract contract WithSaleStart is Ownable
 {
+    /// @dev Thrown when an action requires the sale to have started.
     error SaleNotStarted();
+    /// @dev Thrown when attempting to modify the sale start after it has begun.
     error SaleAlreadyStarted();
 
     // Stores the sale start time

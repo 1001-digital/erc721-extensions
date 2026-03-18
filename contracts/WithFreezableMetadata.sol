@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @author 1001.digital
 /// @title A small helper to handle freezing of metadata
 abstract contract WithFreezableMetadata is Ownable {
+    /// @dev Thrown when attempting to modify metadata after it has been frozen.
     error MetadataFrozen();
 
     // Whether metadata is frozen
