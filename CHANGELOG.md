@@ -1,5 +1,11 @@
 # @1001-digital/erc721-extensions
 
+## 0.1.2
+
+### Patch Changes
+
+- [`c69da8b`](https://github.com/1001-digital/erc721-extensions/commit/c69da8b309f48879dfac1a275f1e607b4e3ef549) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Add 1155 randomly assigned extension (fixes [#17](https://github.com/1001-digital/erc721-extensions/issues/17))
+
 ## 0.1.1
 
 ### Patch Changes
