@@ -1,6 +1,6 @@
 # ERC721 Contract Extensions
 
-A set of composable extensions for the [OpenZeppelin](https://openzeppelin.com/) ERC721 base contracts.
+A set of composable extensions for the [OpenZeppelin](https://openzeppelin.com/) ERC721 and ERC1155 base contracts.
 
 > **v0.1.0 Breaking Change**: This version targets OpenZeppelin 5.x and Solidity ^0.8.20. It is not backward compatible with OZ 4.x consumers. All `require` strings have been replaced with custom errors, `Counters` has been removed, and `_mint`/`_transfer` overrides have been replaced with the OZ 5.x `_update` hook.
 
@@ -350,6 +350,30 @@ contract ExpandableCollection is WithAdditionalMints {
 ```
 
 After the initial collection is live, the owner can call `addToken(cid)`, `addTokens(cid, count)`, `mintAdditionalToken(cid, to)`, or `mintAdditionalTokens(cid, count, to)` to increase supply and point metadata to the updated IPFS directory.
+
+### `RandomlyAssigned1155.sol`
+
+Randomly assign ERC1155 token IDs from a set of token types, each with its own supply. On each mint, a token type is selected at random weighted by its remaining supply.
+
+```solidity
+contract RandomPack is ERC1155, RandomlyAssigned1155 {
+  constructor()
+    ERC1155("")
+    RandomlyAssigned1155(
+      new uint256[](3) /* [1, 2, 3] */,
+      new uint256[](3) /* [10000, 10000, 10000] */
+    )
+  {}
+
+  function mint(uint256 amount) external ensureAvailabilityFor(amount) {
+    for (uint256 i = 0; i < amount; i++) {
+      _mint(msg.sender, nextToken(), 1, "");
+    }
+  }
+}
+```
+
+> Uses the same on-chain randomness approach as `RandomlyAssigned`. The weighted selection loop is negligible for typical ERC1155 collections (dozens of token types).
 
 ## Local Development
 
