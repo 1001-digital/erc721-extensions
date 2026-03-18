@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "hardhat test",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "changeset": "changeset"
   },
   "repository": {
     "type": "git",
@@ -29,6 +30,8 @@
   },
   "packageManager": "pnpm@10.30.0",
   "devDependencies": {
+    "@changesets/changelog-github": "^0.6.0",
+    "@changesets/cli": "^2.30.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^5.0.2",
     "@openzeppelin/contracts": "^5.2.0",
     "@types/node": "^22.19.11",
