@@ -13,6 +13,7 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees, ReentrancyGu
     error PrivateOffer();
     error NotApprovedOrOwner();
     error PriceNotMet();
+    error ExactPriceRequired();
     error ItemNotForSale();
     error PriceMustBePositive();
     error PriceMustBeHigher();
@@ -77,6 +78,7 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees, ReentrancyGu
         }
 
         if (msg.value < offer.price) revert PriceNotMet();
+        if (msg.value != offer.price) revert ExactPriceRequired();
 
         // Keep track of the last price of the token before transfer clears the offer.
         uint128 lastPrice = offer.lastPrice;
@@ -93,13 +95,13 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees, ReentrancyGu
             uint128 gains = salePrice - lastPrice;
             uint256 creatorFees = uint256(gains) * bps / 10000;
 
-            (bool sellerSuccess, ) = seller.call{value: msg.value - creatorFees}("");
+            (bool sellerSuccess, ) = seller.call{value: salePrice - creatorFees}("");
             if (!sellerSuccess) revert TransferFailed();
 
             (bool feeSuccess, ) = beneficiary.call{value: creatorFees}("");
             if (!feeSuccess) revert TransferFailed();
         } else {
-            (bool success, ) = seller.call{value: msg.value}("");
+            (bool success, ) = seller.call{value: salePrice}("");
             if (!success) revert TransferFailed();
         }
 

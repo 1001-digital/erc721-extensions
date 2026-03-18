@@ -168,6 +168,17 @@ describe("WithMarketOffers", async function () {
       );
     });
 
+    it("Should not allow a buyer to overpay for an offered item", async function () {
+      const contract = await deployAndMint();
+
+      await contract.write.makeOffer([1n, price], { account: sellerWallet.account });
+
+      await assert.rejects(
+        contract.write.buy([1n], { value: price + 1n, account: buyerWallet.account }),
+        /ExactPriceRequired/,
+      );
+    });
+
     it("Should not allow a buyer to purchase an item that is not offered", async function () {
       const contract = await deployAndMint();
 

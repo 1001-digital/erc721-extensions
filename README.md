@@ -163,12 +163,14 @@ contract OneForAllToken is ERC721, OnePerWallet {
 }
 ```
 
-> The above code does not prevent people from minting multiple tokens via a separate smart contract - it only checks against externally owned accounts (wallets with private keys). If you want to account for that, additionally activate the `onePerAccount` modifier on your mint function.
+> This restriction is enforced on all recipient addresses, including smart contracts. There is no separate `onePerWallet` or `onePerAccount` modifier in this package.
 
 ### `WithMarketOffers.sol`
 Implements a simple offer based marketplace. Owners of tokens can choose to sell them via the in-built market.
 
 Just extend the `WithMarketOffers.sol` contract to make this work.
+
+> Offers remain active until they are canceled or the token moves. Revoking an operator approval does not automatically clear an already-created offer, because sale execution is handled internally by the token contract.
 
 ### `WithFees.sol`
 Aims to abstracts out the complexity of current fee standards.

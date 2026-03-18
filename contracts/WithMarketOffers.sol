@@ -13,6 +13,7 @@ abstract contract WithMarketOffers is ERC721, WithFees, ReentrancyGuard {
     error PrivateOffer();
     error NotApprovedOrOwner();
     error PriceNotMet();
+    error ExactPriceRequired();
     error ItemNotForSale();
     error PriceMustBePositive();
     error PriceMustBeHigher();
@@ -76,13 +77,14 @@ abstract contract WithMarketOffers is ERC721, WithFees, ReentrancyGuard {
         }
 
         if (msg.value < offer.price) revert PriceNotMet();
+        if (msg.value != offer.price) revert ExactPriceRequired();
 
         // CEI: Transfer token first (clears offer via _update)
         _safeTransfer(seller, msg.sender, tokenId);
 
         // Calculate and send fees
         uint256 fee = offer.price * bps / 10000;
-        uint256 sellerAmount = msg.value - fee;
+        uint256 sellerAmount = offer.price - fee;
 
         (bool sellerSuccess, ) = seller.call{value: sellerAmount}("");
         if (!sellerSuccess) revert TransferFailed();
