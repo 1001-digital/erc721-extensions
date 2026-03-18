@@ -133,7 +133,9 @@ contract MyToken is ERC721, WithSaleStart {
 ```
 
 ### `LimitedTokensPerWallet.sol`
-Limits the amount of tokens an external wallet can hold.
+Limits the amount of tokens a receiving address can hold.
+
+> This is enforced on every recipient address, including smart contracts such as Safes, marketplaces, staking contracts, and vaults. It is not limited to EOAs.
 
 ```solidity
 contract LimitedToken is ERC721, LimitedTokensPerWallet {
@@ -147,9 +149,9 @@ contract LimitedToken is ERC721, LimitedTokensPerWallet {
 ```
 
 ### `OnePerWallet.sol`
-A more extreme version of `LimitedTokensPerWallet`, which only allows holding one token in an external wallet address.
+A more extreme version of `LimitedTokensPerWallet`, which only allows holding one token in a receiving address.
 
-To use this in your project just extend the Contract. If you need more control, call the `onePerWallet` modifier. 
+To use this in your project just extend the contract.
 
 ```solidity
 contract OneForAllToken is ERC721, OnePerWallet {
