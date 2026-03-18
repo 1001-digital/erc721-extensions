@@ -205,29 +205,151 @@ Includes `ReentrancyGuard`, follows the checks-effects-interactions pattern, and
 
 > Offers remain active until they are canceled or the token moves. Revoking an operator approval does not automatically clear an already-created offer, because sale execution is handled internally by the token contract.
 
+```solidity
+contract MarketToken is WithMarketOffers {
+  uint256 private _tokenId;
+
+  constructor(address payable beneficiary)
+    ERC721("MarketToken", "MKT")
+    Ownable(msg.sender)
+    WithMarketOffers(beneficiary, 500) // 5% fee on secondary sales
+  {}
+
+  function mint() external {
+    _tokenId++;
+    _safeMint(msg.sender, _tokenId);
+  }
+}
+```
+
+Token owners can then call `makeOffer(tokenId, price)` or `makeOfferTo(tokenId, price, buyer)`. Buyers complete the sale with `buy(tokenId)` and the exact price in `msg.value`.
+
 ### `OnlyOnGainsCreatorFeesMarket.sol`
 
 A variant of `WithMarketOffers` that only charges creator fees on price appreciation. If a token sells at or below its last sale price, no fee is taken.
+
+```solidity
+contract GainsToken is OnlyOnGainsCreatorFeesMarket {
+  uint256 private _tokenId;
+
+  constructor(address payable beneficiary)
+    ERC721("GainsToken", "GAIN")
+    Ownable(msg.sender)
+    OnlyOnGainsCreatorFeesMarket(beneficiary, 1000) // 10% creator fee on gains only
+  {}
+
+  function mint() external {
+    _tokenId++;
+    _safeMint(msg.sender, _tokenId);
+  }
+}
+```
 
 ### `WithFreezableMetadata.sol`
 
 A helper for irreversibly freezing metadata. Once `freeze()` is called by the owner, any function guarded by the `unfrozen` modifier will revert.
 
+```solidity
+contract FreezableToken is ERC721, WithFreezableMetadata {
+  string private _baseTokenURI;
+
+  constructor()
+    ERC721("FreezableToken", "FRZ")
+    Ownable(msg.sender)
+  {}
+
+  function setBaseURI(string memory newBaseURI) external onlyOwner unfrozen {
+    _baseTokenURI = newBaseURI;
+  }
+
+  function baseURI() external view returns (string memory) {
+    return _baseTokenURI;
+  }
+}
+```
+
 ### `WithTokenPrices.sol`
 
 Enables selling tokens at default and custom prices. Use the `meetsPrice(tokenId)` modifier on your mint/purchase function.
+
+```solidity
+contract PricedToken is ERC721, WithTokenPrices {
+  uint256 private _tokenId;
+
+  constructor()
+    ERC721("PricedToken", "PRICE")
+    Ownable(msg.sender)
+    WithTokenPrices(0.08 ether) // Default mint price
+  {}
+
+  function mint() external payable meetsPrice(_tokenId + 1) {
+    _tokenId++;
+    _safeMint(msg.sender, _tokenId);
+  }
+}
+```
+
+The owner can override individual token prices with `setTokenPrice(tokenId, price)` or batch updates with `setTokenPrices(tokenIds, price)`.
 
 ### `WithWithdrawals.sol`
 
 A simple helper that lets the contract owner withdraw ETH from the contract via `withdraw()`. Uses `.call{value:}()` instead of `.transfer()` for gas-safety.
 
+```solidity
+contract TreasuryToken is ERC721, WithWithdrawals {
+  uint256 public constant PRICE = 0.05 ether;
+  uint256 private _tokenId;
+
+  constructor()
+    ERC721("TreasuryToken", "TRY")
+    Ownable(msg.sender)
+  {}
+
+  function mint() external payable {
+    require(msg.value == PRICE, "Wrong payment");
+    _tokenId++;
+    _safeMint(msg.sender, _tokenId);
+  }
+
+  receive() external payable {}
+}
+```
+
 ### `WithERC20Withdrawals.sol`
 
 Lets the contract owner recover ERC20 tokens accidentally sent to the contract.
 
+```solidity
+contract RecoverableToken is ERC721, WithERC20Withdrawals {
+  constructor()
+    ERC721("RecoverableToken", "RCV")
+    Ownable(msg.sender)
+  {}
+}
+```
+
+If someone transfers an ERC20 token to the NFT contract by mistake, the owner can recover it with `withdrawERC20Token(tokenAddress)`.
+
 ### `WithAdditionalMints.sol`
 
 Enables the contract owner to expand a collection after the initial supply is minted, by adding new tokens and updating the metadata CID.
+
+```solidity
+contract ExpandableCollection is WithAdditionalMints {
+  constructor()
+    ERC721("ExpandableCollection", "XPND")
+    Ownable(msg.sender)
+    WithLimitedSupply(100)
+    WithIPFSMetaData("QmInitialCollectionCid")
+  {}
+
+  function mint() external ensureAvailability() {
+    _safeMint(msg.sender, nextToken());
+  }
+}
+```
+
+After the initial collection is live, the owner can call `addToken(cid)`, `addTokens(cid, count)`, `mintAdditionalToken(cid, to)`, or `mintAdditionalTokens(cid, count, to)` to increase supply and point metadata to the updated IPFS directory.
 
 ## Local Development
 
