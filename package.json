@@ -21,6 +21,10 @@
   ],
   "author": "jalil.eth",
   "license": "MIT",
+  "files": [
+    "contracts/",
+    "!contracts/examples/"
+  ],
   "bugs": {
     "url": "https://github.com/1001-digital/erc721-extensions/issues"
   },
