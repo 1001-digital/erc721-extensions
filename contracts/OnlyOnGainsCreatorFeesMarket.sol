@@ -142,12 +142,13 @@ abstract contract OnlyOnGainsCreatorFeesMarket is ERC721, WithFees, ReentrancyGu
         emit OfferWithdrawn(tokenId);
     }
 
-    /// @dev Clear active offers on transfers.
-    ///      Emits an {OfferWithdrawn} event if an active offer exists.
+    /// @dev Clear active offers on transfers without emitting OfferWithdrawn.
+    ///      The Sale or Transfer event is sufficient for off-chain indexers.
     function _update(address to, uint256 tokenId, address auth) internal virtual override(ERC721) returns (address) {
         address from = super._update(to, tokenId, auth);
         if (_offers[tokenId].price > 0) {
-            _cancelOffer(tokenId);
+            _offers[tokenId].price = 0;
+            _offers[tokenId].specificBuyer = payable(address(0));
         }
         return from;
     }
