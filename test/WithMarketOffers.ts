@@ -157,6 +157,37 @@ describe("WithMarketOffers", async function () {
       assert.equal(sellerBalanceAfter - sellerBalanceBefore, parseEther("1.8"));
     });
 
+    it("Should send fees to the beneficiary (deployer)", async function () {
+      const contract = await deployAndMint();
+
+      await contract.write.makeOffer([1n, price], { account: sellerWallet.account });
+
+      const beneficiaryBefore = await publicClient.getBalance({ address: deployerWallet.account.address });
+
+      await contract.write.buy([1n], { value: price, account: buyerWallet.account });
+
+      const beneficiaryAfter = await publicClient.getBalance({ address: deployerWallet.account.address });
+      // 10% of 2 ETH = 0.2 ETH
+      assert.equal(beneficiaryAfter - beneficiaryBefore, parseEther("0.2"));
+    });
+
+    it("Should clear offer when token is transferred directly", async function () {
+      const contract = await deployAndMint();
+
+      await contract.write.makeOffer([1n, price], { account: sellerWallet.account });
+
+      // Transfer directly (not via buy)
+      await contract.write.transferFrom(
+        [sellerWallet.account.address, buyerWallet.account.address, 1n],
+        { account: sellerWallet.account },
+      );
+
+      await assert.rejects(
+        contract.read.offerFor([1n]),
+        /NoActiveOffer/,
+      );
+    });
+
     it("Should not allow a buyer to purchase an item offered for less than the set price", async function () {
       const contract = await deployAndMint();
 
@@ -204,6 +235,33 @@ describe("WithMarketOffers", async function () {
         contract.read.offerFor([1n]),
         /NoActiveOffer/,
       );
+    });
+  });
+
+  describe("ERC2981 Royalties", async function () {
+    it("Should return correct royalty info", async function () {
+      const contract = await deployAndMint();
+
+      const salePrice = parseEther("10");
+      const [recipient, amount] = await contract.read.royaltyInfo([1n, salePrice]);
+
+      assert.equal(recipient.toLowerCase(), deployerWallet.account.address.toLowerCase());
+      // 10% of 10 ETH = 1 ETH
+      assert.equal(amount, parseEther("1"));
+    });
+
+    it("Should support ERC2981 interface", async function () {
+      const contract = await deployAndMint();
+
+      // ERC2981 interfaceId = 0x2a55205a
+      assert.equal(await contract.read.supportsInterface(["0x2a55205a"]), true);
+    });
+
+    it("Should support ERC721 interface", async function () {
+      const contract = await deployAndMint();
+
+      // ERC721 interfaceId = 0x80ac58cd
+      assert.equal(await contract.read.supportsInterface(["0x80ac58cd"]), true);
     });
   });
 });
