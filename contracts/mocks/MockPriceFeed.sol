@@ -23,6 +23,10 @@ contract MockPriceFeed is AggregatorV3Interface {
         answeredInRound = roundId;
     }
 
+    function setUpdatedAt(uint256 _updatedAt) external {
+        updatedAt = _updatedAt;
+    }
+
     function setStale() external {
         updatedAt = block.timestamp - 2 hours;
     }
