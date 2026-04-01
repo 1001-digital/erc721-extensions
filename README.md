@@ -399,6 +399,29 @@ contract RandomPack is ERC1155, RandomlyAssigned1155 {
 
 > Uses the same on-chain randomness approach as `RandomlyAssigned`. The weighted selection loop is negligible for typical ERC1155 collections (dozens of token types).
 
+### `WithENSReverseLookup.sol`
+
+Resolves ENS reverse records for on-chain display names. Given an address, `_displayName` tries ENS reverse resolution first and falls back to a shortened hex string (`0x1234...5678`).
+
+The contract checks the [ENS registry](https://docs.ens.domains/) at its canonical address (`0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e`, shared across mainnet and major L2s). On chains where the registry is not deployed, the fallback is used automatically.
+
+```solidity
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@1001-digital/erc721-extensions/contracts/WithENSReverseLookup.sol";
+
+contract NamedToken is ERC721, WithENSReverseLookup {
+  constructor()
+    ERC721("NamedToken", "NT")
+  {}
+
+  function ownerDisplayName(uint256 tokenId) external view returns (string memory) {
+    return _displayName(ownerOf(tokenId));
+  }
+}
+```
+
+`_shortHex(address)` is also available as a standalone utility for formatting addresses.
+
 ## Local Development
 
 This project uses [Hardhat](https://hardhat.org/) and [pnpm](https://pnpm.io/).
