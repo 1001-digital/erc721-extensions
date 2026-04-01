@@ -104,6 +104,30 @@ contract MyToken is ERC721, WithSaleStart {
 }
 ```
 
+### `HasPriceFeed.sol`
+
+Adds [Chainlink](https://chain.link/) USD price feed support for ETH pricing. Exposes an internal `_usdToEth(uint256)` helper that converts a USD amount (with the feed's decimals) to wei using the latest oracle price.
+
+Builds on `Ownable` — the contract owner can update the feed address via `setPriceFeed(address)`. The feed is validated for staleness (default: 1 hour), which can be customized by overriding `_maxStaleness()`.
+
+```solidity
+contract PricedToken is ERC721, HasPriceFeed {
+  uint256 public mintPriceUSD = 10_00000000; // $10 (8 decimals)
+
+  constructor(address priceFeed)
+    ERC721("PricedToken", "PT")
+    Ownable(msg.sender)
+    HasPriceFeed(priceFeed)
+  {}
+
+  function mint() external payable {
+    uint256 required = _usdToEth(mintPriceUSD);
+    require(msg.value >= required, "Insufficient payment");
+    // ...
+  }
+}
+```
+
 ### `OnePerWallet.sol`
 
 Restricts every address to holding at most one token. Enforced on all recipient addresses (EOAs and contracts alike) via the `_update` hook.
