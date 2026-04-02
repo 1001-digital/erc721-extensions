@@ -1,5 +1,13 @@
 # @1001-digital/erc721-extensions
 
+## 0.2.0
+
+### Minor Changes
+
+- [`a53734b`](https://github.com/1001-digital/erc721-extensions/commit/a53734b21cf2c77d3dc88f5b3cd089893558e456) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Add `WithENSReverseLookup` extension for resolving ENS reverse records as on-chain display names. Falls back to a shortened hex format (`0x1234...5678`) on chains without an ENS registry.
+
+  Move mock contracts (`MockERC20`, `MockPriceFeed`) to `contracts/mocks/` and add `MockENSRegistry`/`MockENSResolver`. Add `setPrice` and other setters to `MockPriceFeed`.
+
 ## 0.1.2
 
 ### Patch Changes
