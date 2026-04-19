@@ -20,23 +20,22 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
     /// @dev Thrown when binding to the zero namehash or zero address.
     error InvalidBinding();
 
-    // tokenId -> bound namehash. Zero for address-bound tokens.
+    /// @dev Zero for address-bound tokens.
     mapping(uint256 => bytes32) private _nameOf;
 
-    // namehash -> number of tokens bound to it. Only changes on mint and burn.
+    /// @dev Only changes on mint and burn.
     mapping(bytes32 => uint256) private _balanceByName;
 
-    // tokenId -> last address emitted in a Transfer event. Used by `syncOwnership`
-    // to compute the `from` field when the live resolution has drifted.
+    /// @dev `from` field for `syncOwnership`'s Transfer event when live resolution drifts.
+    ///      Only written for ENS-bound tokens; address-bound tokens fall back to `ownerOf`.
     mapping(uint256 => address) private _lastEmittedOwner;
 
-    // Per-address count of address-bound tokens. ENS-bound tokens are counted via
-    // `_balanceByName` and the holder's reverse record.
+    /// @dev ENS-bound tokens are counted via `_balanceByName` and the holder's reverse record.
     mapping(address => uint256) private _addressBoundBalance;
 
     /// @notice The ENS namehash bound to a token, or `bytes32(0)` for address-bound tokens.
     function nameOf(uint256 tokenId) public view returns (bytes32) {
-        if (super._ownerOf(tokenId) == address(0)) revert ERC721NonexistentToken(tokenId);
+        _requireOwned(tokenId);
         return _nameOf[tokenId];
     }
 
@@ -67,7 +66,8 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
     /// @return current The address that owns the token right now.
     function syncOwnership(uint256 tokenId) external returns (address current) {
         current = ownerOf(tokenId);
-        address previous = _lastEmittedOwner[tokenId];
+        // Address-bound: fall back to `current` so the diff is always zero.
+        address previous = _nameOf[tokenId] == bytes32(0) ? current : _lastEmittedOwner[tokenId];
         if (current != previous) {
             _lastEmittedOwner[tokenId] = current;
             emit Transfer(previous, current, tokenId);
@@ -80,8 +80,7 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
     function _mintToName(uint256 tokenId, bytes32 node) internal virtual {
         if (node == bytes32(0)) revert InvalidBinding();
         address resolved = _resolveName(node);
-        // Set the binding before _mint so super._update can distinguish
-        // ENS-bound mints from address-bound mints.
+        // Bind before _mint so `_update` can distinguish ENS-bound from address-bound mints.
         _nameOf[tokenId] = node;
         unchecked { _balanceByName[node] += 1; }
         _mint(resolved, tokenId);
@@ -93,43 +92,36 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
         _mint(to, tokenId);
     }
 
-    /// @dev Block transfers; allow mint and burn. State cleanup happens after super.
-    function _update(address to, uint256 tokenId, address auth) internal virtual override returns (address) {
-        bool exists = super._ownerOf(tokenId) != address(0);
-        if (exists && to != address(0)) revert Soulbound();
-        address from = super._update(to, tokenId, auth);
-        if (!exists && to != address(0)) {
-            // mint
-            _lastEmittedOwner[tokenId] = to;
-            if (_nameOf[tokenId] == bytes32(0)) {
+    function _update(address to, uint256 tokenId, address auth) internal virtual override returns (address from) {
+        from = super._update(to, tokenId, auth);
+        if (from != address(0) && to != address(0)) revert Soulbound();
+        if (from == address(0)) {
+            if (_nameOf[tokenId] != bytes32(0)) {
+                _lastEmittedOwner[tokenId] = to;
+            } else {
                 unchecked { _addressBoundBalance[to] += 1; }
             }
-        } else if (to == address(0)) {
-            // burn
+        } else {
             bytes32 node = _nameOf[tokenId];
             if (node != bytes32(0)) {
                 unchecked { _balanceByName[node] -= 1; }
                 delete _nameOf[tokenId];
+                delete _lastEmittedOwner[tokenId];
             } else {
                 unchecked { _addressBoundBalance[from] -= 1; }
             }
-            delete _lastEmittedOwner[tokenId];
         }
-        return from;
     }
 
-    /// @dev Approvals are meaningless on a soulbound token.
     function approve(address, uint256) public virtual override {
         revert Soulbound();
     }
 
-    /// @dev Approvals are meaningless on a soulbound token.
     function setApprovalForAll(address, bool) public virtual override {
         revert Soulbound();
     }
 
-    /// @dev Look up the address the namehash currently resolves to. Reverts if
-    ///      the name has no resolver or no `addr` record (expired / unset).
+    /// @dev Reverts if the name has no resolver or no `addr` record (expired / unset).
     function _resolveName(bytes32 node) internal view returns (address) {
         address resolver = IENS(ENS_REGISTRY).resolver(node);
         if (resolver == address(0) || resolver.code.length == 0) revert UnresolvedName(node);
@@ -179,15 +171,8 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
     }
 
     function _hashSlice(bytes memory data, uint256 start, uint256 end) private pure returns (bytes32 h) {
-        uint256 len = end - start;
-        bytes memory slice = new bytes(len);
-        for (uint256 i = 0; i < len; ++i) {
-            slice[i] = data[start + i];
+        assembly {
+            h := keccak256(add(add(data, 0x20), start), sub(end, start))
         }
-        h = keccak256(slice);
     }
-}
-
-interface IAddrResolver {
-    function addr(bytes32 node) external view returns (address);
 }

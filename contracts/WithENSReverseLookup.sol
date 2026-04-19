@@ -79,3 +79,7 @@ interface IENS {
 interface IENSResolver {
     function name(bytes32 node) external view returns (string memory);
 }
+
+interface IAddrResolver {
+    function addr(bytes32 node) external view returns (address);
+}
