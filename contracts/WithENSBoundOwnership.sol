@@ -74,16 +74,31 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
         }
     }
 
-    /// @dev Mint a token bound to an ENS namehash. The implementing contract is
-    ///      responsible for any access control (e.g. requiring `msg.sender` to be
-    ///      the resolved address, restricting which names are eligible, etc.).
+    /// @dev Mint a token strictly bound to an ENS namehash. Reverts if the name
+    ///      can't be resolved on-chain (no resolver, `addr` returns zero, or the
+    ///      resolver reverts e.g. via CCIP-Read). The implementing contract is
+    ///      responsible for any access control.
     function _mintToName(uint256 tokenId, bytes32 node) internal virtual {
+        _mintToName(tokenId, node, address(0));
+    }
+
+    /// @dev Mint a token bound to an ENS namehash, falling back to address-bound
+    ///      with `fallbackTo` as the owner if on-chain resolution isn't possible
+    ///      (CCIP-Read, missing resolver, or unset `addr` record). Reverts if
+    ///      both the name is unresolvable and `fallbackTo` is the zero address.
+    function _mintToName(uint256 tokenId, bytes32 node, address fallbackTo) internal virtual {
         if (node == bytes32(0)) revert InvalidBinding();
-        address resolved = _resolveName(node);
-        // Bind before _mint so `_update` can distinguish ENS-bound from address-bound mints.
-        _nameOf[tokenId] = node;
-        unchecked { _balanceByName[node] += 1; }
-        _mint(resolved, tokenId);
+        address resolved = _tryResolveName(node);
+        if (resolved != address(0)) {
+            // Bind before _mint so `_update` can distinguish ENS-bound from address-bound mints.
+            _nameOf[tokenId] = node;
+            unchecked { _balanceByName[node] += 1; }
+            _mint(resolved, tokenId);
+        } else if (fallbackTo != address(0)) {
+            _mint(fallbackTo, tokenId);
+        } else {
+            revert UnresolvedName(node);
+        }
     }
 
     /// @dev Mint a plain soulbound token bound to a fixed address.
@@ -93,6 +108,20 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
     }
 
     function _update(address to, uint256 tokenId, address auth) internal virtual override returns (address from) {
+        // For an ENS-bound burn whose live resolution has drifted past the last
+        // emitted owner, sync OZ's `_owners` first so the burn's `Transfer.from`
+        // matches the address indexers currently believe owns the token.
+        if (to == address(0)) {
+            bytes32 burnNode = _nameOf[tokenId];
+            if (burnNode != bytes32(0)) {
+                address stale = super._ownerOf(tokenId);
+                address last = _lastEmittedOwner[tokenId];
+                if (stale != address(0) && last != stale) {
+                    super._update(last, tokenId, address(0));
+                }
+            }
+        }
+
         from = super._update(to, tokenId, auth);
         if (from != address(0) && to != address(0)) revert Soulbound();
         if (from == address(0)) {
@@ -128,6 +157,18 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
         address resolved = IAddrResolver(resolver).addr(node);
         if (resolved == address(0)) revert UnresolvedName(node);
         return resolved;
+    }
+
+    /// @dev Returns address(0) on any failure (no resolver, `addr` returns zero,
+    ///      or the resolver reverts — including the CCIP-Read `OffchainLookup`).
+    function _tryResolveName(bytes32 node) internal view returns (address) {
+        if (ENS_REGISTRY.code.length == 0) return address(0);
+        try IENS(ENS_REGISTRY).resolver(node) returns (address resolver) {
+            if (resolver == address(0) || resolver.code.length == 0) return address(0);
+            try IAddrResolver(resolver).addr(node) returns (address resolved) {
+                return resolved;
+            } catch { return address(0); }
+        } catch { return address(0); }
     }
 
     /// @dev Reverse-resolve `owner` to its primary ENS name and return the count

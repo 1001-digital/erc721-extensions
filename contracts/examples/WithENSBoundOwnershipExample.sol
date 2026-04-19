@@ -10,6 +10,10 @@ contract WithENSBoundOwnershipExample is WithENSBoundOwnership {
         _mintToName(tokenId, node);
     }
 
+    function mintToNameOrFallback(uint256 tokenId, bytes32 node, address fallbackTo) external {
+        _mintToName(tokenId, node, fallbackTo);
+    }
+
     function mintToAddress(uint256 tokenId, address to) external {
         _mintToAddress(tokenId, to);
     }

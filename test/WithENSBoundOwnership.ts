@@ -278,5 +278,84 @@ describe("WithENSBoundOwnership", async function () {
       assert.equal(await contract.read.balanceOf([walletA.account.address]), 0n);
       await assert.rejects(contract.read.ownerOf([1n]), /ERC721NonexistentToken/);
     });
+
+    it("Should emit a corrective Transfer before burn when the resolver has drifted", async function () {
+      await contract.write.mintToName([1n, driftNode]);
+      await mockResolver.write.setAddr([driftNode, walletD.account.address]);
+      await contract.write.syncOwnership([1n]);
+
+      // Now: OZ's stored owner = walletC (mint-time), live owner = walletD.
+      const logs = await transferLogs(await contract.write.burn([1n]));
+
+      // Expect: corrective Transfer(walletC, walletD), then burn Transfer(walletD, 0).
+      assert.equal(logs.length, 2);
+      assert.ok(isAddressEqual(logs[0].args.from, walletC.account.address));
+      assert.ok(isAddressEqual(logs[0].args.to, walletD.account.address));
+      assert.ok(isAddressEqual(logs[1].args.from, walletD.account.address));
+      assert.ok(isAddressEqual(logs[1].args.to, zeroAddress));
+
+      await mockResolver.write.setAddr([driftNode, walletC.account.address]);
+    });
+
+    it("Should emit a single burn Transfer when the resolver has not drifted", async function () {
+      await contract.write.mintToName([1n, aliceNode]);
+
+      const logs = await transferLogs(await contract.write.burn([1n]));
+
+      assert.equal(logs.length, 1);
+      assert.ok(isAddressEqual(logs[0].args.from, walletA.account.address));
+      assert.ok(isAddressEqual(logs[0].args.to, zeroAddress));
+    });
+  });
+
+  describe("CCIP-Read fallback", function () {
+    const ccipNode = namehash("ccip.eth");
+
+    before(async function () {
+      await setResolver(deployer, ccipNode, mockResolver.address);
+      await mockResolver.write.setOffchain([ccipNode, true]);
+    });
+
+    it("Should revert strict mintToName when the resolver reverts (CCIP-Read)", async function () {
+      await assert.rejects(
+        contract.write.mintToName([1n, ccipNode]),
+        /UnresolvedName/,
+      );
+    });
+
+    it("Should fall back to address-bound when fallback is provided", async function () {
+      await contract.write.mintToNameOrFallback([
+        1n,
+        ccipNode,
+        walletE.account.address,
+      ]);
+
+      assert.ok(
+        isAddressEqual(await contract.read.ownerOf([1n]), walletE.account.address),
+      );
+      assert.equal(await contract.read.nameOf([1n]), zeroHash);
+      assert.equal(await contract.read.balanceOfName([ccipNode]), 0n);
+      assert.equal(await contract.read.balanceOf([walletE.account.address]), 1n);
+    });
+
+    it("Should still mint ENS-bound when the name is resolvable", async function () {
+      await contract.write.mintToNameOrFallback([
+        1n,
+        aliceNode,
+        walletE.account.address,
+      ]);
+
+      assert.equal(await contract.read.nameOf([1n]), aliceNode);
+      assert.ok(
+        isAddressEqual(await contract.read.ownerOf([1n]), walletA.account.address),
+      );
+    });
+
+    it("Should revert when both resolution fails and fallback is zero", async function () {
+      await assert.rejects(
+        contract.write.mintToNameOrFallback([1n, ccipNode, zeroAddress]),
+        /UnresolvedName/,
+      );
+    });
   });
 });
