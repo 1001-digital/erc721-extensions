@@ -14,7 +14,7 @@ import {
 
 import { installMockENS, reverseNode, setResolver } from "../helpers/ens.js";
 
-describe("WithENSBoundOwnership", async function () {
+describe("WithENSBound721", async function () {
   const { viem } = await network.connect();
   const [deployer, walletA, walletB, walletC, walletD, walletE] =
     await viem.getWalletClients();
@@ -29,7 +29,7 @@ describe("WithENSBoundOwnership", async function () {
     ReturnType<typeof viem.deployContract<"MockENSResolver">>
   >;
   let namehashContract: Awaited<
-    ReturnType<typeof viem.deployContract<"WithENSBoundOwnershipExample">>
+    ReturnType<typeof viem.deployContract<"WithENSBound721Example">>
   >;
   let contract: typeof namehashContract;
 
@@ -37,7 +37,7 @@ describe("WithENSBoundOwnership", async function () {
     const installed = await installMockENS({ viem, deployer, publicClient });
     mockResolver = installed.resolver;
     namehashContract = await viem.deployContract(
-      "WithENSBoundOwnershipExample",
+      "WithENSBound721Example",
       [],
     );
 
@@ -62,7 +62,7 @@ describe("WithENSBoundOwnership", async function () {
   });
 
   beforeEach(async function () {
-    contract = await viem.deployContract("WithENSBoundOwnershipExample", []);
+    contract = await viem.deployContract("WithENSBound721Example", []);
   });
 
   async function transferLogs(txHash: `0x${string}`) {

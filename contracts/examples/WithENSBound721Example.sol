@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./../WithENSBoundOwnership.sol";
+import "./../WithENSBound721.sol";
 
-contract WithENSBoundOwnershipExample is WithENSBoundOwnership {
+contract WithENSBound721Example is WithENSBound721 {
     constructor() ERC721("ENSBoundExample", "ENSB") {}
 
     function mintToName(uint256 tokenId, bytes32 node) external {

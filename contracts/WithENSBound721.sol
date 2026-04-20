@@ -11,12 +11,10 @@ import "./WithENSReverseLookup.sol";
 ///        * Address-bound — owner is fixed at mint time (standard soulbound behavior).
 ///      Tokens cannot be transferred or approved. The implementing contract decides who
 ///      may mint in which mode.
-abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
+abstract contract WithENSBound721 is ERC721, WithENSReverseLookup {
 
     /// @dev Thrown when a transfer or approval would violate soulbound semantics.
     error Soulbound();
-    /// @dev Thrown when the bound ENS name has no resolver or no `addr` record.
-    error UnresolvedName(bytes32 node);
     /// @dev Thrown when binding to the zero namehash or zero address.
     error InvalidBinding();
 
@@ -150,27 +148,6 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
         revert Soulbound();
     }
 
-    /// @dev Reverts if the name has no resolver or no `addr` record (expired / unset).
-    function _resolveName(bytes32 node) internal view returns (address) {
-        address resolver = IENS(ENS_REGISTRY).resolver(node);
-        if (resolver == address(0) || resolver.code.length == 0) revert UnresolvedName(node);
-        address resolved = IAddrResolver(resolver).addr(node);
-        if (resolved == address(0)) revert UnresolvedName(node);
-        return resolved;
-    }
-
-    /// @dev Returns address(0) on any failure (no resolver, `addr` returns zero,
-    ///      or the resolver reverts — including the CCIP-Read `OffchainLookup`).
-    function _tryResolveName(bytes32 node) internal view returns (address) {
-        if (ENS_REGISTRY.code.length == 0) return address(0);
-        try IENS(ENS_REGISTRY).resolver(node) returns (address resolver) {
-            if (resolver == address(0) || resolver.code.length == 0) return address(0);
-            try IAddrResolver(resolver).addr(node) returns (address resolved) {
-                return resolved;
-            } catch { return address(0); }
-        } catch { return address(0); }
-    }
-
     /// @dev Reverse-resolve `owner` to its primary ENS name and return the count
     ///      of ENS-bound tokens for that name. Forward-verifies the name points back
     ///      to `owner`; otherwise returns 0.
@@ -196,24 +173,5 @@ abstract contract WithENSBoundOwnership is ERC721, WithENSReverseLookup {
         } catch { return 0; }
 
         return _balanceByName[forwardNode];
-    }
-
-    /// @dev Compute the ENS namehash of a dot-separated name, e.g. "vault.alice.eth".
-    ///      Walks right-to-left, hashing labels into the running node.
-    function _namehash(bytes memory name) internal pure returns (bytes32 node) {
-        uint256 labelEnd = name.length;
-        for (uint256 i = name.length; i > 0; --i) {
-            if (name[i - 1] == 0x2e /* '.' */) {
-                node = keccak256(abi.encodePacked(node, _hashSlice(name, i, labelEnd)));
-                labelEnd = i - 1;
-            }
-        }
-        node = keccak256(abi.encodePacked(node, _hashSlice(name, 0, labelEnd)));
-    }
-
-    function _hashSlice(bytes memory data, uint256 start, uint256 end) private pure returns (bytes32 h) {
-        assembly {
-            h := keccak256(add(add(data, 0x20), start), sub(end, start))
-        }
     }
 }
