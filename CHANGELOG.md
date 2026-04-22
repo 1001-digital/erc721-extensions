@@ -1,5 +1,11 @@
 # @1001-digital/erc721-extensions
 
+## 0.4.0
+
+### Minor Changes
+
+- [`23d8a03`](https://github.com/1001-digital/erc721-extensions/commit/23d8a03e5365091d3a3284bdd1ff32efcbabf484) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Add `OneOfEachPerWallet` (ERC1155) extension — caps each wallet at one unit of any given token ID. A wallet may hold multiple distinct IDs, but never more than one of the same ID. Complements the existing ERC721 `OnePerWallet`.
+
 ## 0.3.0
 
 ### Minor Changes
