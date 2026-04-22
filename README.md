@@ -165,6 +165,53 @@ contract LimitedToken is ERC721, LimitedTokensPerWallet {
 }
 ```
 
+### `Soulbound.sol`
+
+Makes an ERC721 token soulbound: mintable and burnable, but not transferable between holders. Enforced via the `_update` hook. Pairs well with OpenZeppelin's `ERC721Burnable` when you also want the holder to be able to retire their token.
+
+```solidity
+contract SoulboundToken is ERC721, ERC721Burnable, Soulbound {
+  uint256 private _tokenId;
+
+  constructor()
+    ERC721("SoulboundToken", "SBT")
+  {}
+
+  function mint() external {
+    _tokenId++;
+    _safeMint(msg.sender, _tokenId);
+  }
+
+  function _update(address to, uint256 tokenId, address auth)
+    internal override(ERC721, Soulbound) returns (address)
+  {
+    return Soulbound._update(to, tokenId, auth);
+  }
+}
+```
+
+### `Soulbound1155.sol`
+
+The ERC1155 equivalent of `Soulbound`. Mints (`from == 0`) and burns (`to == 0`) are permitted; every other transfer reverts with `NonTransferable`. Combines cleanly with `ERC1155Burnable`.
+
+```solidity
+contract SoulboundEdition is ERC1155, ERC1155Burnable, Soulbound1155 {
+  constructor()
+    ERC1155("ipfs://Qm.../{id}.json")
+  {}
+
+  function mint(uint256 id, uint256 amount) external {
+    _mint(msg.sender, id, amount, "");
+  }
+
+  function _update(address from, address to, uint256[] memory ids, uint256[] memory values)
+    internal override(ERC1155, Soulbound1155)
+  {
+    Soulbound1155._update(from, to, ids, values);
+  }
+}
+```
+
 ### `WithContractMetaData.sol`
 
 Link to your collection's contract metadata right from within your smart contract.
