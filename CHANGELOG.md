@@ -1,5 +1,11 @@
 # @1001-digital/erc721-extensions
 
+## 0.3.0
+
+### Minor Changes
+
+- [#24](https://github.com/1001-digital/erc721-extensions/pull/24) [`808ebd6`](https://github.com/1001-digital/erc721-extensions/commit/808ebd65fbe2a82ac3c28ca3573c42256e4dce55) Thanks [@jwahdatehagh](https://github.com/jwahdatehagh)! - Add `Soulbound` (ERC721) and `Soulbound1155` (ERC1155) extensions — tokens are mintable and burnable but cannot be transferred between holders. Pairs with OpenZeppelin's `ERC721Burnable` / `ERC1155Burnable`.
+
 ## 0.2.0
 
 ### Minor Changes
