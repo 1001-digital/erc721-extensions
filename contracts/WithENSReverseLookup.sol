@@ -2,13 +2,16 @@
 pragma solidity ^0.8.20;
 
 /// @author 1001.digital
-/// @title Resolve ENS reverse records for on-chain display names.
+/// @title ENS primitives — reverse display names, forward resolution, namehash.
 abstract contract WithENSReverseLookup {
 
     /// @dev namehash("addr.reverse")
     bytes32 internal constant ADDR_REVERSE_NODE = 0x91d1777781884d03a6757a803996e38de2a42967fb37eeaca72729271025a9e2;
 
     address internal constant ENS_REGISTRY = 0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e;
+
+    /// @dev Thrown when forward resolution of an ENS name fails.
+    error UnresolvedName(bytes32 node);
 
     /// @dev Resolve a display name for an address. Tries ENS reverse
     ///      resolution first, falls back to a shortened hex string.
@@ -26,6 +29,47 @@ abstract contract WithENSReverseLookup {
         } catch {}
 
         return _shortHex(addr);
+    }
+
+    /// @dev Forward-resolve a namehash to its `addr` record. Reverts `UnresolvedName`
+    ///      if no resolver is set, the resolver has no code, or `addr` returns zero.
+    function _resolveName(bytes32 node) internal view returns (address) {
+        address resolver = IENS(ENS_REGISTRY).resolver(node);
+        if (resolver == address(0) || resolver.code.length == 0) revert UnresolvedName(node);
+        address resolved = IAddrResolver(resolver).addr(node);
+        if (resolved == address(0)) revert UnresolvedName(node);
+        return resolved;
+    }
+
+    /// @dev Like `_resolveName` but returns address(0) on any failure (including
+    ///      resolver reverts such as the CCIP-Read `OffchainLookup`).
+    function _tryResolveName(bytes32 node) internal view returns (address) {
+        if (ENS_REGISTRY.code.length == 0) return address(0);
+        try IENS(ENS_REGISTRY).resolver(node) returns (address resolver) {
+            if (resolver == address(0) || resolver.code.length == 0) return address(0);
+            try IAddrResolver(resolver).addr(node) returns (address resolved) {
+                return resolved;
+            } catch { return address(0); }
+        } catch { return address(0); }
+    }
+
+    /// @dev Compute the ENS namehash of a dot-separated name, e.g. "vault.alice.eth".
+    ///      Walks right-to-left, hashing labels into the running node.
+    function _namehash(bytes memory name) internal pure returns (bytes32 node) {
+        uint256 labelEnd = name.length;
+        for (uint256 i = name.length; i > 0; --i) {
+            if (name[i - 1] == 0x2e /* '.' */) {
+                node = keccak256(abi.encodePacked(node, _hashSlice(name, i, labelEnd)));
+                labelEnd = i - 1;
+            }
+        }
+        node = keccak256(abi.encodePacked(node, _hashSlice(name, 0, labelEnd)));
+    }
+
+    function _hashSlice(bytes memory data, uint256 start, uint256 end) private pure returns (bytes32 h) {
+        assembly {
+            h := keccak256(add(add(data, 0x20), start), sub(end, start))
+        }
     }
 
     /// @dev keccak256 of the lowercase hex representation of an address (no 0x prefix).
@@ -78,4 +122,8 @@ interface IENS {
 
 interface IENSResolver {
     function name(bytes32 node) external view returns (string memory);
+}
+
+interface IAddrResolver {
+    function addr(bytes32 node) external view returns (address);
 }

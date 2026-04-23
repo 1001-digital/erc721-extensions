@@ -15,6 +15,10 @@ contract MockENSRegistry {
 
 contract MockENSResolver {
     mapping(bytes32 => string) private _names;
+    mapping(bytes32 => address) private _addrs;
+    mapping(bytes32 => bool) private _offchain;
+
+    error MockOffchainLookup();
 
     function setName(bytes32 node, string calldata ensName) external {
         _names[node] = ensName;
@@ -22,5 +26,18 @@ contract MockENSResolver {
 
     function name(bytes32 node) external view returns (string memory) {
         return _names[node];
+    }
+
+    function setAddr(bytes32 node, address a) external {
+        _addrs[node] = a;
+    }
+
+    function setOffchain(bytes32 node, bool offchain) external {
+        _offchain[node] = offchain;
+    }
+
+    function addr(bytes32 node) external view returns (address) {
+        if (_offchain[node]) revert MockOffchainLookup();
+        return _addrs[node];
     }
 }
